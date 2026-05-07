@@ -9,21 +9,36 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--sky:#0a1628;--mid:#102040;--light:#1a3055;--acc:#f4a620;--adim:rgba(244,166,32,.15);--grn:#2ec97e;--red:#e84040;--blu:#4db8ff;--txt:#e8eaf2;--mut:#8a9ab5;--bdr:rgba(255,255,255,.08);--card:rgba(10,22,40,.97);--ibg:rgba(255,255,255,.06);--r:12px;--rs:8px;--sw:350px}
+:root{--sky:#0a1628;--mid:#102040;--light:#1a3055;--acc:#f4a620;--adim:rgba(244,166,32,.15);--grn:#2ec97e;--red:#e84040;--blu:#4db8ff;--txt:#e8eaf2;--mut:#8a9ab5;--bdr:rgba(255,255,255,.08);--card:rgba(10,22,40,.97);--ibg:rgba(255,255,255,.06);--r:12px;--rs:8px;--sw:360px}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--txt);height:100dvh;overflow:hidden;display:flex;flex-direction:column}
-/* TOPBAR */
 .topbar{height:52px;background:var(--mid);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:1000;flex-shrink:0;gap:8px}
 .logo{display:flex;align-items:center;gap:8px;font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:-.5px;flex-shrink:0}
 .logo-icon{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
 .logo span{color:var(--acc)}
 .tbr{display:flex;align-items:center;gap:8px;flex-shrink:0}
+/* FUEL FILTER BAR */
+.fbar{height:42px;background:rgba(10,22,40,.98);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 12px;gap:5px;overflow-x:auto;flex-shrink:0;z-index:999;scrollbar-width:none}
+.fbar::-webkit-scrollbar{display:none}
+.fbar-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);white-space:nowrap;flex-shrink:0;padding-right:4px}
+.fpill{padding:5px 12px;border-radius:20px;border:1px solid var(--bdr);background:transparent;color:var(--mut);font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .18s;display:flex;align-items:center;gap:5px;flex-shrink:0;touch-action:manipulation}
+.fpill:hover{border-color:rgba(255,255,255,.25);color:var(--txt)}
+.fpill.on{color:#fff;border-color:transparent;font-weight:700}
+.fpill.on.fp-avgas{background:rgba(244,166,32,.9)}
+.fpill.on.fp-jeta{background:rgba(77,184,255,.85)}
+.fpill.on.fp-jetai{background:rgba(167,139,250,.85)}
+.fpill.on.fp-brjet{background:rgba(46,201,126,.85)}
+.fpill.on.fp-brjeti{background:rgba(251,146,60,.85)}
+.fdot{display:inline-block;border-radius:50%;flex-shrink:0}
+.dc-avgas{background:#f4a620}.dc-jeta{background:#4db8ff}.dc-jetai{background:#a78bfa}.dc-brjet{background:#2ec97e}.dc-brjeti{background:#fb923c}
 /* BUTTONS */
 .btn{padding:7px 13px;border-radius:var(--rs);border:1px solid var(--bdr);background:var(--ibg);color:var(--txt);font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;white-space:nowrap;touch-action:manipulation;display:inline-flex;align-items:center;gap:5px}
 .btn:hover{background:rgba(255,255,255,.1)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn-a{background:var(--acc);border-color:var(--acc);color:#0a1628;font-weight:700}
 .btn-a:hover{background:#fdb93c}
+.btn-red{background:rgba(232,64,64,.12);border-color:rgba(232,64,64,.35);color:var(--red)}
+.btn-red:hover{background:rgba(232,64,64,.22)}
 .btn-sm{padding:6px 11px;font-size:12px}
 .btn-block{width:100%;justify-content:center;margin-top:13px}
 .btn-grn{background:rgba(46,201,126,.12);border-color:rgba(46,201,126,.35);color:var(--grn)}
@@ -36,54 +51,51 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
 .leaflet-control-zoom a:hover{background:var(--light)!important}
 .leaflet-control-attribution{display:none}
 .leaflet-control-zoom{margin-bottom:60px!important}
-/* FUEL FILTER BAR */
-.fbar{height:40px;background:var(--mid);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 12px;gap:6px;overflow-x:auto;flex-shrink:0;z-index:999;scrollbar-width:none}
-.fbar::-webkit-scrollbar{display:none}
-.fbar-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);white-space:nowrap;flex-shrink:0;margin-right:2px}
-.fpill{padding:4px 11px;border-radius:20px;border:1px solid var(--bdr);background:var(--ibg);color:var(--mut);font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .18s;display:flex;align-items:center;gap:5px;touch-action:manipulation}
-.fpill:hover{border-color:rgba(255,255,255,.2);color:var(--txt)}
-.fpill.on{color:#0a1628;border-color:transparent}
-.fpill.on.f-avgas{background:#f4a620}
-.fpill.on.f-jeta{background:#4db8ff}
-.fpill.on.f-jetai{background:#a78bfa}
-.fpill.on.f-brjet{background:#2ec97e}
-.fpill.on.f-brjeti{background:#fb923c}
-.fpill .fdot{flex-shrink:0}
 /* PICK BANNER */
-.pbanner{position:fixed;top:98px;left:50%;transform:translateX(-50%);background:var(--acc);color:#0a1628;padding:9px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:2000;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.pbanner{position:fixed;top:100px;left:50%;transform:translateX(-50%);background:var(--acc);color:#0a1628;padding:9px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:2000;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 .pbanner.on{display:flex;align-items:center;gap:12px}
 .pbanner .cancel{cursor:pointer;text-decoration:underline;font-weight:400}
-/* TEMP MARKER */
 .tmppin{width:14px;height:14px;border-radius:50%;background:var(--acc);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)}
 /* MARKERS */
-.mk-o{display:flex;flex-direction:column;align-items:center;cursor:pointer;width:74px}
-.mk-b{background:#102040;border:2px solid #f4a620;border-radius:7px;padding:4px 7px 3px;width:100%;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 8px rgba(244,166,32,.2)}
-.mk-i{display:block;font-size:11px;font-weight:700;color:#f4a620;letter-spacing:.04em;line-height:1.3;font-family:'Space Grotesk',sans-serif}
-.mk-f{display:block;font-size:9px;color:#8a9ab5;line-height:1.2;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.03em}
-.mk-p{display:block;font-size:10px;font-weight:600;color:#8ecff7;line-height:1.3;font-family:'Space Grotesk',sans-serif}
-.mk-d{display:block;font-size:9px;color:#8a9ab5;line-height:1.3;font-family:'Space Grotesk',sans-serif}
-.mk-pin{width:2px;height:7px;background:#f4a620;margin:0 auto}
-.mk-dot{width:6px;height:6px;border-radius:50%;background:#f4a620;border:1px solid #0a1628}
+.mk-o{display:flex;flex-direction:column;align-items:center;cursor:pointer;width:78px}
+.mk-b{background:#102040;border-radius:7px;padding:4px 7px 3px;width:100%;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.6)}
+.mk-icao{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;line-height:1.3;font-family:'Space Grotesk',sans-serif}
+.mk-fuel{display:block;font-size:8px;line-height:1.2;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.03em;margin-top:1px}
+.mk-price{display:block;font-size:11px;font-weight:700;line-height:1.3;font-family:'Space Grotesk',sans-serif}
+.mk-date{display:block;font-size:8px;color:#8a9ab5;line-height:1.3;font-family:'Space Grotesk',sans-serif}
+.mk-pin{width:2px;height:7px;margin:0 auto}
+.mk-dot{width:6px;height:6px;border-radius:50%;border:1px solid #0a1628}
 /* POPUP */
 .leaflet-popup-content-wrapper{background:#102040!important;border:1px solid rgba(255,255,255,.1)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.6)!important;color:#e8eaf2!important;padding:0!important}
-.leaflet-popup-content{margin:0!important;width:290px!important}
+.leaflet-popup-content{margin:0!important;width:296px!important}
 .leaflet-popup-tip{background:#102040!important}
 .leaflet-popup-close-button{color:#8a9ab5!important;font-size:18px!important;top:10px!important;right:10px!important}
 .pi{padding:14px 16px 16px}
 .pi-icao{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#f4a620}
 .pi-name{font-size:11px;color:#8a9ab5;margin:1px 0 10px}
-.pi-fuel-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
-.pi-ftab{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--bdr);background:var(--ibg);color:var(--mut);transition:all .15s}
-.pi-ftab.on{background:var(--adim);border-color:var(--acc);color:var(--acc)}
-.pi-pbox{background:rgba(244,166,32,.1);border:1px solid rgba(244,166,32,.3);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
-.pi-pval{font-size:22px;font-weight:700;color:#f4a620}
+.pi-ftabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.pi-ft{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--bdr);background:var(--ibg);color:var(--mut);transition:all .15s}
+.pi-ft.on{border-color:transparent}
+.pi-pbox{border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.pi-ptop{display:flex;align-items:flex-start;justify-content:space-between}
+.pi-pval{font-size:22px;font-weight:700}
+.pi-ptype{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+.pi-pmeta{font-size:10px;color:#8a9ab5;margin-top:3px}
+.pi-prices-split{display:flex;gap:8px;margin-top:8px}
+.pi-price-pill{flex:1;background:rgba(255,255,255,.06);border-radius:6px;padding:6px 8px;text-align:center}
+.pi-price-pill-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8a9ab5;display:block}
+.pi-price-pill-val{font-size:14px;font-weight:700;display:block;margin-top:2px}
 .pi-empty{text-align:center;padding:10px 0;color:#8a9ab5;font-size:12px;font-style:italic}
 .pi-htitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8a9ab5;margin-bottom:6px}
-.pi-hrow{display:flex;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:11px}
+.pi-hrow{display:flex;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:11px;gap:6px}
 .pi-hrow:last-child{border-bottom:none}
-.pi-hdate{color:#8a9ab5;flex-shrink:0;min-width:68px}
-.pi-hwho{color:#8a9ab5;flex:1;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pi-hprice{font-weight:600;flex-shrink:0}
+.pi-hdate{color:#8a9ab5;flex-shrink:0;font-size:10px;min-width:60px}
+.pi-hwho{color:#8a9ab5;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
+.pi-hptype{font-size:9px;padding:1px 5px;border-radius:10px;flex-shrink:0}
+.pi-hptype-v{background:rgba(46,201,126,.15);color:var(--grn)}
+.pi-hptype-p{background:rgba(77,184,255,.15);color:var(--blu)}
+.pi-hprice{font-weight:600;flex-shrink:0;min-width:55px;text-align:right}
+.pi-actions{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:6px}
 /* MODAL */
 .mo{display:none;position:fixed;inset:0;background:rgba(5,12,28,.88);z-index:3000;align-items:center;justify-content:center;padding:16px}
 .mo.on{display:flex}
@@ -93,7 +105,6 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
 .mt{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
 .mc{width:28px;height:28px;border-radius:6px;background:var(--ibg);border:1px solid var(--bdr);color:var(--mut);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
 .mb{padding:16px 20px 22px}
-/* FORM */
 .fg{margin-bottom:13px}
 .fl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px}
 .fc{width:100%;padding:10px 13px;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--rs);color:var(--txt);font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;transition:border-color .18s}
@@ -104,6 +115,10 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
 .tc{padding:11px 6px;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--rs);text-align:center;cursor:pointer;transition:all .18s;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
 .tc .ti{font-size:18px;display:block;margin-bottom:5px}
 .tc.sel{border-color:var(--acc);background:var(--adim);color:var(--acc)}
+.ptype-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px}
+.ptype-opt{padding:9px 6px;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--rs);text-align:center;cursor:pointer;transition:all .18s;font-size:11px;font-weight:700;color:var(--mut)}
+.ptype-opt.sel{border-color:var(--grn);background:rgba(46,201,126,.1);color:var(--grn)}
+.ptype-opt.sel.prazo{border-color:var(--blu);background:rgba(77,184,255,.1);color:var(--blu)}
 .al{padding:9px 13px;border-radius:var(--rs);font-size:13px;margin-bottom:13px}
 .al-s{background:rgba(46,201,126,.1);border:1px solid rgba(46,201,126,.3);color:var(--grn)}
 .al-e{background:rgba(232,64,64,.1);border:1px solid rgba(232,64,64,.3);color:var(--red)}
@@ -112,7 +127,6 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
 .pw{position:relative}
 .pp{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:13px;font-weight:600;pointer-events:none}
 .pf{padding-left:30px!important}
-/* COORD BOX */
 .cbox{background:var(--light);border:1px solid var(--bdr);border-radius:var(--rs);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
 .cval{font-weight:600;color:var(--acc);font-family:monospace;font-size:11px}
 /* SIDEBAR */
@@ -133,37 +147,38 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
 .sbl{flex:1;overflow-y:auto}
 .sbl::-webkit-scrollbar{width:3px}
 .sbl::-webkit-scrollbar-thumb{background:var(--light);border-radius:2px}
+/* price list rows */
 .ur{padding:9px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;gap:8px}
 .ul2{flex:1;min-width:0}
 .uic{font-size:12px;font-weight:700;color:var(--acc);letter-spacing:.05em}
-.uwh{font-size:10px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.up2{font-size:14px;font-weight:700;white-space:nowrap}
-.ud{font-size:10px;color:var(--mut);text-align:right}
-.uf{font-size:9px;color:var(--mut);text-align:right;text-transform:uppercase}
+.uan{font-size:10px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.up2{font-size:15px;font-weight:700;white-space:nowrap}
+.ud{font-size:9px;color:var(--mut);text-align:right}
+.uf{font-size:9px;color:var(--mut);text-align:right;text-transform:uppercase;display:flex;align-items:center;justify-content:flex-end;gap:3px}
+.upt-v{font-size:8px;padding:1px 5px;border-radius:8px;background:rgba(46,201,126,.15);color:var(--grn);font-weight:700}
+.upt-p{font-size:8px;padding:1px 5px;border-radius:8px;background:rgba(77,184,255,.15);color:var(--blu);font-weight:700}
 .sw2{padding:10px 16px;border-bottom:1px solid var(--bdr);position:relative;flex-shrink:0}
 .si{font-size:13px;position:absolute;left:28px;top:50%;transform:translateY(-50%);pointer-events:none}
 .sin{width:100%;padding:8px 10px 8px 30px;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--rs);color:var(--txt);font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none}
 .sin:focus{border-color:var(--acc)}
 .ar{padding:9px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .14s;gap:6px}
 .ar:hover{background:rgba(255,255,255,.03)}
-.aic{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--acc);flex-shrink:0;min-width:52px}
+.aic{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--acc);flex-shrink:0;min-width:50px}
 .an{font-size:11px;color:var(--mut);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ap2{font-size:12px;font-weight:600;flex-shrink:0}
 .and{font-size:11px;color:var(--mut);font-style:italic;flex-shrink:0}
 .nb{font-size:9px;padding:2px 6px;border-radius:20px;flex-shrink:0;text-transform:uppercase;letter-spacing:.05em;font-weight:700;background:rgba(77,184,255,.15);color:var(--blu);border:1px solid rgba(77,184,255,.3)}
-/* LOG */
 .lt{width:100%;font-size:11px;border-collapse:collapse}
 .lt th{padding:8px 10px;background:var(--light);color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.06em;text-align:left;position:sticky;top:0}
 .lt td{padding:7px 10px;border-bottom:1px solid var(--bdr);vertical-align:top}
 .la{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:700}
 .la-p{background:rgba(244,166,32,.15);color:var(--acc)}
 .la-c{background:rgba(46,201,126,.15);color:var(--grn)}
-/* STATS */
+.la-d{background:rgba(232,64,64,.15);color:var(--red)}
 .stats{position:fixed;bottom:16px;left:16px;display:flex;gap:8px;z-index:500;pointer-events:none}
 .sp{background:rgba(10,22,40,.92);border:1px solid var(--bdr);border-radius:30px;padding:6px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px;backdrop-filter:blur(6px)}
 .sd{width:7px;height:7px;border-radius:50%;background:var(--acc)}
 .sd.g{background:var(--grn)}
-/* FABS */
 .fabs{position:fixed;right:16px;bottom:16px;display:none;flex-direction:column;align-items:flex-end;gap:10px;z-index:800}
 .fabs.on{display:flex}
 .fab{width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 3px 12px rgba(0,0,0,.4)}
@@ -174,18 +189,17 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
 .fab-s.picking{background:var(--acc);color:#0a1628;border-color:var(--acc)}
 .flbl{background:rgba(10,22,40,.92);border:1px solid var(--bdr);color:var(--txt);font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px;white-space:nowrap}
 .frow{display:flex;align-items:center;gap:8px}
-/* SPINNER */
 .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle}
 @keyframes sp{to{transform:rotate(360deg)}}
-/* FUEL COLOR DOTS */
-.fdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
-.f-avgas{background:#f4a620}
-.f-jeta{background:#4db8ff}
-.f-jetai{background:#a78bfa}
-.f-brjet{background:#2ec97e}
-.f-brjeti{background:#fb923c}
 @media(max-width:600px){:root{--sw:100vw}.stats{display:none}.fabs{bottom:12px;right:12px}.md{max-width:100%}.leaflet-control-zoom{display:none!important}.fr2{grid-template-columns:1fr}.logo span{display:none}}
 .empty{text-align:center;padding:28px 16px;color:var(--mut);font-size:13px}
+.rep-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.rep-sort-lbl{font-size:10px;color:var(--mut)}
+/* DELETE MODAL */
+.del-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr)}
+.del-row:last-child{border-bottom:none}
+.del-fuel{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px}
+.del-price{font-size:12px;color:var(--mut)}
 </style>
 </head>
 <body>
@@ -196,15 +210,18 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
     <button class="btn btn-a" onclick="openM('register')">Cadastrar</button>
   </div>
 </div>
-<div id="map"></div>
+
+<!-- FUEL FILTER BAR -->
 <div class="fbar" id="fbar">
-  <span class="fbar-label">Filtrar:</span>
-  <button class="fpill f-avgas on" data-fuel="AVGAS" onclick="toggleFuel(this)"><span class="fdot" style="width:8px;height:8px;border-radius:50%;background:#f4a620;display:inline-block"></span>AVGAS</button>
-  <button class="fpill f-jeta on" data-fuel="JET-A" onclick="toggleFuel(this)"><span class="fdot" style="width:8px;height:8px;border-radius:50%;background:#4db8ff;display:inline-block"></span>JET-A</button>
-  <button class="fpill f-jetai on" data-fuel="JET-A INTER" onclick="toggleFuel(this)"><span class="fdot" style="width:8px;height:8px;border-radius:50%;background:#a78bfa;display:inline-block"></span>JET-A INTER</button>
-  <button class="fpill f-brjet on" data-fuel="BR JET PLUS" onclick="toggleFuel(this)"><span class="fdot" style="width:8px;height:8px;border-radius:50%;background:#2ec97e;display:inline-block"></span>BR JET PLUS</button>
-  <button class="fpill f-brjeti on" data-fuel="BR JET PLUS INTER" onclick="toggleFuel(this)"><span class="fdot" style="width:8px;height:8px;border-radius:50%;background:#fb923c;display:inline-block"></span>BR JET PLUS INTER</button>
+  <span class="fbar-label">Ver:</span>
+  <button class="fpill fp-avgas on" data-fuel="AVGAS" onclick="toggleFuel(this)"><span class="fdot dc-avgas" style="width:8px;height:8px"></span>AVGAS</button>
+  <button class="fpill fp-jeta on" data-fuel="JET-A" onclick="toggleFuel(this)"><span class="fdot dc-jeta" style="width:8px;height:8px"></span>JET-A</button>
+  <button class="fpill fp-jetai on" data-fuel="JET-A INTER" onclick="toggleFuel(this)"><span class="fdot dc-jetai" style="width:8px;height:8px"></span>JET-A INTER</button>
+  <button class="fpill fp-brjet on" data-fuel="BR JET PLUS" onclick="toggleFuel(this)"><span class="fdot dc-brjet" style="width:8px;height:8px"></span>BR JET PLUS</button>
+  <button class="fpill fp-brjeti on" data-fuel="BR JET PLUS INTER" onclick="toggleFuel(this)"><span class="fdot dc-brjeti" style="width:8px;height:8px"></span>BR JET PLUS INTER</button>
 </div>
+
+<div id="map"></div>
 <div class="pbanner" id="pbanner">📍 Clique no mapa para posicionar o aeródromo <span class="cancel" onclick="cancelPick()">✕ Cancelar</span></div>
 <div class="stats">
   <div class="sp"><div class="sd"></div><span id="st-t">—</span></div>
@@ -225,16 +242,18 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
     </div>
   </div>
   <div class="tabs">
-    <button class="tb on" data-t="rep" onclick="swTab(this)">Preço</button>
+    <button class="tb on" data-t="rep" onclick="swTab(this)">Preços</button>
     <button class="tb" data-t="aeros" onclick="swTab(this)">Pontos</button>
     <button class="tb" data-t="hist" onclick="swTab(this)">Hist.</button>
     <button class="tb" data-t="log" onclick="swTab(this)">Log</button>
   </div>
+
+  <!-- TAB PREÇOS: reportar + lista ordenada -->
   <div class="tc2 on" id="tab-rep">
     <div class="sh">
       <div class="sl">Reportar preço</div>
       <div class="fg" style="margin-bottom:9px"><select class="fc" id="rep-icao"><option value="">Carregando…</option></select></div>
-      <div class="fg" style="margin-bottom:9px">
+      <div class="fr2" style="margin-bottom:9px">
         <select class="fc" id="rep-fuel">
           <option value="AVGAS">⛽ AVGAS</option>
           <option value="JET-A">✈️ JET-A</option>
@@ -242,23 +261,36 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
           <option value="BR JET PLUS">🇧🇷 BR JET PLUS</option>
           <option value="BR JET PLUS INTER">🌐 BR JET PLUS INTER</option>
         </select>
+        <select class="fc" id="rep-ptype">
+          <option value="vista">💵 À vista</option>
+          <option value="prazo">📅 A prazo</option>
+        </select>
       </div>
-      <div style="display:flex;gap:7px;align-items:flex-end">
+      <div style="display:flex;gap:7px;align-items:flex-end;margin-bottom:9px">
         <div class="pw" style="flex:1"><span class="pp">R$</span><input type="number" class="fc pf" id="rep-price" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
         <button class="btn btn-a btn-sm" id="btn-env" onclick="submitPrice()">Enviar</button>
       </div>
-      <div id="rep-fb" style="margin-top:9px;display:none"></div>
+      <div id="rep-fb" style="display:none"></div>
     </div>
-    <div style="padding:10px 16px 6px;flex-shrink:0"><div class="sl">Últimas atualizações</div></div>
+    <!-- Lista ordenada por preço, filtrada pelos combustíveis ativos -->
+    <div style="padding:8px 16px 6px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
+      <div class="sl" style="margin-bottom:0">Aeródromos visíveis — menor preço</div>
+    </div>
     <div class="sbl" id="rep-list"><div class="empty">Carregando…</div></div>
   </div>
+
+  <!-- TAB PONTOS -->
   <div class="tc2" id="tab-aeros">
-    <div class="sw2"><span class="si">🔍</span><input class="sin" placeholder="Buscar ICAO ou nome…" oninput="filterAeros(this.value)"></div>
+    <div class="sw2"><span class="si">🔍</span><input class="sin" id="aero-search" placeholder="Buscar ICAO ou nome…" oninput="filterAeros(this.value)"></div>
     <div class="sbl" id="aero-list"><div class="empty">Carregando…</div></div>
   </div>
+
+  <!-- TAB HISTÓRICO -->
   <div class="tc2" id="tab-hist">
     <div class="sbl" id="hist-list"><div class="empty">Clique em um aeródromo no mapa</div></div>
   </div>
+
+  <!-- TAB LOG -->
   <div class="tc2" id="tab-log">
     <div class="sbl" id="log-list"><div class="empty">—</div></div>
   </div>
@@ -319,15 +351,11 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
         <div class="fg" style="margin-bottom:0"><label class="fl">Nome / Cidade</label><input class="fc" id="new-nome" placeholder="Nome do aeródromo"></div>
       </div>
       <div class="fg" style="margin-top:13px">
-        <label class="fl">Tipo de combustível (opcional)</label>
-        <select class="fc" id="new-fuel" style="margin-bottom:8px">
-          <option value="">Sem preço inicial</option>
-          <option value="AVGAS">AVGAS</option>
-          <option value="JET-A">JET-A</option>
-          <option value="JET-A INTER">JET-A INTER</option>
-          <option value="BR JET PLUS">BR JET PLUS</option>
-          <option value="BR JET PLUS INTER">BR JET PLUS INTER</option>
-        </select>
+        <label class="fl">Preço inicial (opcional)</label>
+        <div class="fr2" style="margin-bottom:8px">
+          <select class="fc" id="new-fuel"><option value="">Sem preço</option><option value="AVGAS">AVGAS</option><option value="JET-A">JET-A</option><option value="JET-A INTER">JET-A INTER</option><option value="BR JET PLUS">BR JET PLUS</option><option value="BR JET PLUS INTER">BR JET PLUS INTER</option></select>
+          <select class="fc" id="new-ptype"><option value="vista">À vista</option><option value="prazo">A prazo</option></select>
+        </div>
         <div class="pw"><span class="pp">R$</span><input type="number" class="fc pf" id="new-price" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
       </div>
       <button class="btn btn-a btn-block" id="btn-new" onclick="saveNewAero()">Salvar aeródromo</button>
@@ -335,39 +363,105 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
   </div>
 </div>
 
+<!-- MODAL GERENCIAR COMBUSTÍVEIS (delete/edit) -->
+<div class="mo" id="mo-manage">
+  <div class="md">
+    <div class="mh"><div class="mt" id="manage-title">Gerenciar combustíveis</div><button class="mc" onclick="closeM('manage')">✕</button></div>
+    <div class="mb">
+      <div id="al-manage" class="al" style="display:none"></div>
+      <div id="manage-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR DELETE -->
+<div class="mo" id="mo-del">
+  <div class="md" style="max-width:360px">
+    <div class="mh"><div class="mt">Remover preço</div><button class="mc" onclick="closeM('del')">✕</button></div>
+    <div class="mb">
+      <div id="al-del" class="al" style="display:none"></div>
+      <p style="font-size:13px;color:var(--mut);margin-bottom:16px" id="del-msg"></p>
+      <div class="fr2">
+        <button class="btn" onclick="closeM('del')">Cancelar</button>
+        <button class="btn btn-red" id="btn-del-confirm" onclick="confirmDelete()">🗑 Remover</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const SB_URL='https://piflbejipeelgkivwqeo.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpZmxiZWppcGVlbGdraXZ3cWVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjE1MDcsImV4cCI6MjA5MzczNzUwN30._TxM_EZdObmZLoAgMy-x20o3-AQXjdXHoyrIZvNIuIo';
-const db = supabase.createClient(SB_URL,SB_KEY);
+const db=supabase.createClient(SB_URL,SB_KEY);
 
 const FUELS=['AVGAS','JET-A','JET-A INTER','BR JET PLUS','BR JET PLUS INTER'];
-const FCLASS={AVGAS:'f-avgas','JET-A':'f-jeta','JET-A INTER':'f-jetai','BR JET PLUS':'f-brjet','BR JET PLUS INTER':'f-brjeti'};
+// fuel → css suffix for dot/pill colors
+const FC={AVGAS:'avgas','JET-A':'jeta','JET-A INTER':'jetai','BR JET PLUS':'brjet','BR JET PLUS INTER':'brjeti'};
 
+// ── DB helpers ──────────────────────────────────────────────
 async function dbQ(t,order=true){
   let q=db.from(t).select('*');
   if(order) q=q.order('created_at',{ascending:false});
-  const {data,error}=await q;
+  const{data,error}=await q;
   if(error){console.error(t,error);return[];}
   return data||[];
 }
 async function dbI(t,row){
-  const {data,error}=await db.from(t).insert([row]).select();
+  const{data,error}=await db.from(t).insert([row]).select();
   if(error) throw error;
   return data[0];
 }
+async function dbD(t,id){
+  const{error}=await db.from(t).delete().eq('id',id);
+  if(error) throw error;
+}
 async function addLog(action,detail){
   if(!me) return;
-  try{await dbI('audit_log',{user_email:me.email,user_name:me.nome,user_type:me.type,action,detail});}catch(e){}
+  try{await dbI('audit_log',{user_email:me.email,user_name:me.nome,user_type:me.type,action,detail});}catch(_){}
 }
 
+// ── STATE ───────────────────────────────────────────────────
 let map,MK={},tmpMK=null;
 let aeros=[],prices=[];
 let me=JSON.parse(localStorage.getItem('avgas_me')||'null');
 let sbOpen=false,pickMode=false,pendLL=null,regType='';
-
-// fuel filter per aerodrome popup
 let popupFuel='';
+let activeFuels=new Set(FUELS); // all active by default
+let _pendDelId=null; // price ID pending delete
 
+// ── PRICE HELPERS ───────────────────────────────────────────
+// Returns latest price for a specific fuel among ACTIVE fuels only
+function getByFuel(icao,fuel){
+  return prices.find(p=>p.icao===icao&&p.fuel_type===fuel)||null;
+}
+// Returns all price records for a fuel (for history)
+function getHistFuel(icao,fuel){
+  return prices.filter(p=>p.icao===icao&&p.fuel_type===fuel).slice(0,8);
+}
+// Best (cheapest) price among ACTIVE fuels
+// Returns {p, f} where p.price is the lowest
+function bestActive(icao){
+  let best=null;
+  for(const f of FUELS){
+    if(!activeFuels.has(f)) continue;
+    const p=getByFuel(icao,f);
+    if(!p) continue;
+    if(!best||+p.price < +best.p.price) best={p,f};
+  }
+  return best;
+}
+// True if aero should be shown on map given current filter
+// Rules:
+//  - If aero has NO price at all: always show (grey marker, discoverable)
+//  - If aero has prices but NONE match active fuels: hide
+//  - If aero has at least one price matching an active fuel: show
+function isVisible(icao){
+  const hasSomePrice=FUELS.some(f=>getByFuel(icao,f));
+  if(!hasSomePrice) return true; // no price → always visible (grey)
+  return FUELS.some(f=>activeFuels.has(f)&&getByFuel(icao,f));
+}
+
+// ── MAP INIT ────────────────────────────────────────────────
 async function initMap(){
   map=L.map('map',{zoomControl:true,attributionControl:false}).setView([-15.5,-48.5],5);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
@@ -382,76 +476,212 @@ async function loadAll(){
   if(me) populateSB();
 }
 
-function getLatestByFuel(icao,fuel){
-  return prices.find(p=>p.icao===icao&&p.fuel_type===fuel)||null;
-}
-function getLatestAny(icao){
-  // priority: AVGAS first, then JET-A, then whatever
-  for(const f of FUELS){const p=getLatestByFuel(icao,f);if(p)return{p,f};}
-  return null;
-}
-function getLast6(icao,fuel){
-  return prices.filter(p=>p.icao===icao&&p.fuel_type===fuel).slice(0,6);
-}
+// ── MARKERS ─────────────────────────────────────────────────
+// Marker border/pin color = cheapest active fuel color
+const FUEL_COLOR={AVGAS:'#f4a620','JET-A':'#4db8ff','JET-A INTER':'#a78bfa','BR JET PLUS':'#2ec97e','BR JET PLUS INTER':'#fb923c'};
 
 function mkHTML(a){
-  // Show best price from currently ACTIVE fuels only
-  let best=null;
-  for(const f of FUELS){
-    if(!activeFuels.has(f)) continue;
-    const p=getLatestByFuel(a.icao,f);
-    if(p){best={p,f};break;}
-  }
+  const best=bestActive(a.icao);
+  const color=best?FUEL_COLOR[best.f]:'#8a9ab5';
   const ps=best?`R$ ${(+best.p.price).toFixed(2)}`:'—';
   const ft=best?best.f:'';
   const ds=best?fmtS(best.p.created_at):'';
   return `<div class="mk-o">
-    <div class="mk-b">
-      <span class="mk-i">${a.icao}</span>
-      ${ft?`<span class="mk-f"><span class="fdot ${FCLASS[ft]||''}"></span>${ft}</span>`:''}
-      <span class="mk-p">${ps}</span>
-      ${ds?`<span class="mk-d">${ds}</span>`:''}
+    <div class="mk-b" style="border:2px solid ${color};box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 8px ${color}33">
+      <span class="mk-icao" style="color:${color}">${a.icao}</span>
+      ${ft?`<span class="mk-fuel" style="color:${color}99"><span class="fdot dc-${FC[ft]}" style="width:6px;height:6px;margin-right:2px;vertical-align:middle"></span>${ft}</span>`:''}
+      <span class="mk-price" style="color:${best?'#e8eaf2':'#8a9ab5'}">${ps}</span>
+      ${ds?`<span class="mk-date">${ds}</span>`:''}
     </div>
-    <div class="mk-pin"></div><div class="mk-dot"></div>
+    <div class="mk-pin" style="background:${color}"></div>
+    <div class="mk-dot" style="background:${color}"></div>
   </div>`;
 }
 
 function addMK(a){
   if(MK[a.icao]){MK[a.icao].remove();delete MK[a.icao];}
-  const ico=L.divIcon({className:'',html:mkHTML(a),iconAnchor:[37,46],iconSize:null});
+  const ico=L.divIcon({className:'',html:mkHTML(a),iconAnchor:[39,48],iconSize:null});
   const m=L.marker([a.lat,a.lng],{icon:ico});
   m.on('click',()=>{if(pickMode)return; showPopup(a);});
   m.addTo(map);
   MK[a.icao]=m;
-  updateMKVisibility(a);
+  applyVisibility(a.icao);
 }
 
+function applyVisibility(icao){
+  const m=MK[icao]; if(!m) return;
+  const vis=isVisible(icao);
+  const el=m.getElement();
+  if(el){
+    el.style.opacity=vis?'1':'0';
+    el.style.pointerEvents=vis?'auto':'none';
+  }
+}
+
+function refreshAllMarkers(){
+  aeros.forEach(a=>{
+    if(MK[a.icao]){
+      // Rebuild HTML (price label changes with filter)
+      const ico=L.divIcon({className:'',html:mkHTML(a),iconAnchor:[39,48],iconSize:null});
+      MK[a.icao].setIcon(ico);
+    }
+    applyVisibility(a.icao);
+  });
+  populateRepList(); // sidebar list also updates
+}
+
+// ── FUEL FILTER ─────────────────────────────────────────────
+function toggleFuel(btn){
+  const f=btn.dataset.fuel;
+  if(activeFuels.has(f)){
+    if(activeFuels.size===1) return; // keep at least one
+    activeFuels.delete(f);
+    btn.classList.remove('on');
+  }else{
+    activeFuels.add(f);
+    btn.classList.add('on');
+  }
+  refreshAllMarkers();
+  updateStats();
+  // refresh whichever sidebar tab is open
+  if(document.getElementById('tab-aeros').classList.contains('on')) populateAeroList(_q||'');
+  if(document.getElementById('tab-rep').classList.contains('on')) populateRepList();
+}
+
+// ── POPUP ────────────────────────────────────────────────────
 function showPopup(a){
-  // Which fuels exist for this aerodrome?
   const avFuels=FUELS.filter(f=>prices.some(p=>p.icao===a.icao&&p.fuel_type===f));
-  if(!popupFuel||!avFuels.includes(popupFuel)) popupFuel=avFuels[0]||'AVGAS';
+  if(!avFuels.length){avFuels.push('AVGAS');}
+  if(!popupFuel||!avFuels.includes(popupFuel)) popupFuel=avFuels[0];
 
   function buildContent(fuel){
-    const l=getLatestByFuel(a.icao,fuel);
-    const h=getLast6(a.icao,fuel);
-    const tabs=avFuels.map(f=>`<button class="pi-ftab${f===fuel?' on':''}" onclick="window._popupFuel='${f}';window._repopup && window._repopup()">${f}</button>`).join('');
-    const pbox=l
-      ?`<div class="pi-pbox"><div><div style="font-size:10px;color:#8a9ab5;font-weight:700;text-transform:uppercase;letter-spacing:.06em">${fuel}</div><div style="font-size:10px;color:#8a9ab5;margin-top:1px">${fmtD(l.created_at)}</div></div><div class="pi-pval">R$ ${(+l.price).toFixed(2)}</div></div>`
-      :`<div class="pi-empty">Sem preço cadastrado para ${fuel}</div>`;
-    const hh=h.length?`<div class="pi-htitle">Últimas ${h.length} atualizações</div>`+h.map(p=>`<div class="pi-hrow"><span class="pi-hdate">${fmtS(p.created_at)}</span><span class="pi-hwho">${p.user_email?.split('@')[0]||'?'}</span><span class="pi-hprice">R$ ${(+p.price).toFixed(2)}</span></div>`).join(''):'';
-    return `<div class="pi"><div class="pi-icao">${a.icao}</div><div class="pi-name">${a.nome}</div><div class="pi-fuel-tabs">${tabs}</div>${pbox}${hh}</div>`;
+    const color=FUEL_COLOR[fuel]||'#f4a620';
+    const cl=FC[fuel]||'avgas';
+    const p=getByFuel(a.icao,fuel);
+    const h=getHistFuel(a.icao,fuel);
+
+    // Tabs
+    const tabs=avFuels.map(f=>{
+      const c=FUEL_COLOR[f]||'#f4a620';
+      const on=f===fuel;
+      return `<button class="pi-ft${on?' on':''}" style="${on?`background:${c}22;border-color:${c};color:${c}`:''}" onclick="window._pFuel='${f}';window._repop&&window._repop()">${f}</button>`;
+    }).join('');
+
+    // Price box
+    let pbox='';
+    if(p){
+      const vista_p=prices.find(x=>x.icao===a.icao&&x.fuel_type===fuel&&x.price_type==='vista');
+      const prazo_p=prices.find(x=>x.icao===a.icao&&x.fuel_type===fuel&&x.price_type==='prazo');
+      const hasBoth=vista_p&&prazo_p&&vista_p.id!==prazo_p.id;
+      const mainPrice=vista_p||p;
+      if(hasBoth){
+        pbox=`<div class="pi-pbox" style="background:${color}18;border:1px solid ${color}44">
+          <div class="pi-ptype" style="color:${color};margin-bottom:6px"><span class="fdot dc-${cl}" style="width:8px;height:8px;margin-right:4px;vertical-align:middle"></span>${fuel}</div>
+          <div class="pi-prices-split">
+            <div class="pi-price-pill"><span class="pi-price-pill-lbl">À vista</span><span class="pi-price-pill-val" style="color:${color}">R$ ${(+vista_p.price).toFixed(2)}</span></div>
+            <div class="pi-price-pill"><span class="pi-price-pill-lbl">A prazo</span><span class="pi-price-pill-val" style="color:var(--blu)">R$ ${(+prazo_p.price).toFixed(2)}</span></div>
+          </div>
+          <div style="font-size:9px;color:#8a9ab5;margin-top:6px">${fmtD(mainPrice.created_at)}</div>
+        </div>`;
+      }else{
+        const ptype=p.price_type||'vista';
+        pbox=`<div class="pi-pbox" style="background:${color}18;border:1px solid ${color}44">
+          <div class="pi-ptop">
+            <div>
+              <div class="pi-ptype" style="color:${color}"><span class="fdot dc-${cl}" style="width:8px;height:8px;margin-right:4px;vertical-align:middle"></span>${fuel}</div>
+              <div class="pi-pmeta">${fmtD(p.created_at)}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="pi-pval" style="color:${color}">R$ ${(+p.price).toFixed(2)}</div>
+              <div style="font-size:10px;color:${ptype==='vista'?'var(--grn)':'var(--blu)'};font-weight:700">${ptype==='vista'?'À vista':'A prazo'}</div>
+            </div>
+          </div>
+        </div>`;
+      }
+    }else{
+      pbox=`<div class="pi-empty">Sem preço cadastrado para ${fuel}</div>`;
+    }
+
+    // History
+    const hh=h.length?`<div class="pi-htitle">Últimas atualizações</div>`+
+      h.map(px=>`<div class="pi-hrow">
+        <span class="pi-hdate">${fmtS(px.created_at)}</span>
+        <span class="pi-hwho">${px.user_email?.split('@')[0]||'?'}</span>
+        <span class="pi-hptype ${px.price_type==='prazo'?'pi-hptype-p':'pi-hptype-v'}">${px.price_type==='prazo'?'prazo':'vista'}</span>
+        <span class="pi-hprice" style="color:${FUEL_COLOR[fuel]||'#e8eaf2'}">R$ ${(+px.price).toFixed(2)}</span>
+      </div>`).join(''):'';
+
+    // Actions (only for logged-in users)
+    const actions=me?`<div class="pi-actions">
+      <button class="btn btn-sm btn-red" onclick="openManage('${a.icao}','${a.nome}')">✏️ Gerenciar</button>
+    </div>`:'';
+
+    return `<div class="pi">
+      <div class="pi-icao">${a.icao}</div>
+      <div class="pi-name">${a.nome}</div>
+      <div class="pi-ftabs">${tabs}</div>
+      ${pbox}${hh}${actions}
+    </div>`;
   }
 
-  const popup=L.popup({maxWidth:310}).setLatLng([a.lat,a.lng]).setContent(buildContent(popupFuel)).openOn(map);
-  window._repopup=()=>{popupFuel=window._popupFuel;popup.setContent(buildContent(popupFuel));};
+  const popup=L.popup({maxWidth:320}).setLatLng([a.lat,a.lng]).setContent(buildContent(popupFuel)).openOn(map);
+  window._repop=()=>{popupFuel=window._pFuel;popup.setContent(buildContent(popupFuel));};
   showHist(a,popupFuel);
 }
 
-// PICK MODE
-function togglePick(){
-  if(!me){openM('login');return;}
-  if(pickMode) cancelPick(); else startPick();
+// ── MANAGE (delete fuel price) ───────────────────────────────
+function openManage(icao,nome){
+  const a=aeros.find(x=>x.icao===icao);if(!a)return;
+  document.getElementById('manage-title').textContent=`${icao} — ${nome}`;
+  document.getElementById('al-manage').style.display='none';
+
+  // Build list of fuel types that have prices for this aero
+  const fuelsWithPrice=FUELS.filter(f=>getByFuel(icao,f));
+  if(!fuelsWithPrice.length){
+    document.getElementById('manage-list').innerHTML=`<div class="empty">Nenhum preço cadastrado</div>`;
+  }else{
+    document.getElementById('manage-list').innerHTML=fuelsWithPrice.map(f=>{
+      const p=getByFuel(icao,f);
+      const color=FUEL_COLOR[f]||'#f4a620';
+      const ptype=p.price_type||'vista';
+      return`<div class="del-row">
+        <div>
+          <div class="del-fuel"><span class="fdot dc-${FC[f]}" style="width:10px;height:10px"></span><span style="color:${color}">${f}</span></div>
+          <div class="del-price">R$ ${(+p.price).toFixed(2)} · <span style="color:${ptype==='vista'?'var(--grn)':'var(--blu)'}">${ptype==='vista'?'à vista':'a prazo'}</span> · ${fmtS(p.created_at)}</div>
+        </div>
+        <button class="btn btn-red btn-sm" onclick="askDelete('${p.id}','${icao}','${f}')">🗑 Remover</button>
+      </div>`;
+    }).join('');
+  }
+  openM('manage');
 }
+
+function askDelete(priceId,icao,fuel){
+  _pendDelId=priceId;
+  document.getElementById('del-msg').textContent=`Remover o preço de ${fuel} em ${icao}? Isso apaga apenas o registro mais recente.`;
+  document.getElementById('al-del').style.display='none';
+  openM('del');
+}
+
+async function confirmDelete(){
+  if(!_pendDelId) return;
+  setLoad('btn-del-confirm',true,'Removendo…');
+  try{
+    await dbD('prices',_pendDelId);
+    await addLog('delete_price',`Removeu preço ID ${_pendDelId}`);
+    // Remove from local prices array
+    prices=prices.filter(p=>p.id!==_pendDelId);
+    // Refresh markers
+    aeros.forEach(a=>addMK(a));
+    updateStats();populateSB();
+    _pendDelId=null;
+    closeM('del');closeM('manage');
+  }catch(e){showAl2('del','Erro: '+e.message,'e');}
+  setLoad('btn-del-confirm',false,'🗑 Remover');
+}
+
+// ── PICK MODE ────────────────────────────────────────────────
+function togglePick(){if(!me){openM('login');return;} if(pickMode) cancelPick(); else startPick();}
 function startPick(){
   pickMode=true;
   document.getElementById('map').classList.add('pick');
@@ -460,12 +690,9 @@ function startPick(){
   document.getElementById('fab-lbl').textContent='Clique no mapa…';
   if(window.innerWidth<=600){document.getElementById('sb').classList.remove('on');sbOpen=false;}
 }
-function startPickFromModal(){
-  closeM('new');
-  startPick();
-}
+function startPickFromModal(){closeM('new');startPick();}
 function cancelPick(){
-  pickMode=false; pendLL=null;
+  pickMode=false;pendLL=null;
   document.getElementById('map').classList.remove('pick');
   document.getElementById('pbanner').classList.remove('on');
   document.getElementById('fab-pick').classList.remove('picking');
@@ -485,27 +712,28 @@ function setPickedLL(latlng){
   openM('new');
 }
 
-// SAVE NEW AERO
+// ── SAVE NEW AERO ────────────────────────────────────────────
 async function saveNewAero(){
   const icao=document.getElementById('new-icao').value.trim().toUpperCase();
   const nome=document.getElementById('new-nome').value.trim();
   const fuel=document.getElementById('new-fuel').value;
+  const ptype=document.getElementById('new-ptype').value;
   const price=parseFloat(document.getElementById('new-price').value);
-  if(!pendLL) return showAl('new','📍 Escolha a posição clicando em "Escolher" e depois no mapa.','w');
-  if(!icao||icao.length<2) return showAl('new','Indicativo ICAO inválido.','e');
-  if(!nome) return showAl('new','Informe o nome do aeródromo.','e');
-  if(aeros.find(a=>a.icao===icao)) return showAl('new',`O código ${icao} já existe no sistema.`,'e');
+  if(!pendLL) return showAl2('new','📍 Escolha a posição clicando em "Escolher" e depois no mapa.','w');
+  if(!icao||icao.length<2) return showAl2('new','Indicativo ICAO inválido.','e');
+  if(!nome) return showAl2('new','Informe o nome do aeródromo.','e');
+  if(aeros.find(a=>a.icao===icao)) return showAl2('new',`O código ${icao} já existe no sistema.`,'e');
   setLoad('btn-new',true,'Salvando…');
   try{
     const novo=await dbI('aeros',{icao,nome,lat:pendLL.lat,lng:pendLL.lng,added_by:me.email});
     aeros.push(novo);
     await addLog('create_aero',`Criou aeródromo ${icao} — ${nome}`);
     if(fuel&&price>0){
-      const pr=await dbI('prices',{icao,fuel_type:fuel,price,user_email:me.email});
+      const pr=await dbI('prices',{icao,fuel_type:fuel,price,price_type:ptype,user_email:me.email});
       prices.unshift(pr);
-      await addLog('price',`Preço R$ ${price.toFixed(2)} (${fuel}) em ${icao}`);
+      await addLog('price',`R$ ${price.toFixed(2)} (${fuel}/${ptype}) em ${icao}`);
     }
-    addMK(novo); updateStats(); populateSB();
+    addMK(novo);updateStats();populateSB();
     closeM('new');
     if(tmpMK){tmpMK.remove();tmpMK=null;}
     pendLL=null;
@@ -514,27 +742,27 @@ async function saveNewAero(){
     document.getElementById('new-fuel').value='';
     map.flyTo([novo.lat,novo.lng],11,{duration:1});
     setTimeout(()=>showPopup(novo),1200);
-  }catch(e){showAl('new','Erro: '+e.message,'e');}
+  }catch(e){showAl2('new','Erro: '+e.message,'e');}
   setLoad('btn-new',false,'Salvar aeródromo');
 }
 
-// AUTH
+// ── AUTH ─────────────────────────────────────────────────────
 async function registerUser(){
   const nome=document.getElementById('rg-nome').value.trim();
   const cpf=document.getElementById('rg-cpf').value.trim();
   const email=document.getElementById('rg-email').value.trim();
-  if(!regType) return showAl('reg','Selecione o tipo de usuário.','e');
-  if(!nome) return showAl('reg','Informe seu nome.','e');
-  if(!cpf||cpf.replace(/\D/g,'').length!==11) return showAl('reg','CPF inválido.','e');
-  if(!email||!email.includes('@')) return showAl('reg','E-mail inválido.','e');
+  if(!regType) return showAl2('reg','Selecione o tipo de usuário.','e');
+  if(!nome) return showAl2('reg','Informe seu nome.','e');
+  if(!cpf||cpf.replace(/\D/g,'').length!==11) return showAl2('reg','CPF inválido.','e');
+  if(!email||!email.includes('@')) return showAl2('reg','E-mail inválido.','e');
   setLoad('btn-reg',true,'Criando…');
   try{
     const{data:ex}=await db.from('users').select('id').or(`email.eq.${email},cpf.eq.${cpf}`);
-    if(ex&&ex.length){showAl('reg','E-mail ou CPF já cadastrado.','e');setLoad('btn-reg',false,'Criar conta');return;}
+    if(ex&&ex.length){showAl2('reg','E-mail ou CPF já cadastrado.','e');setLoad('btn-reg',false,'Criar conta');return;}
     const u=await dbI('users',{nome,cpf,email,type:regType});
-    showAl('reg','Conta criada!','s');
+    showAl2('reg','Conta criada!','s');
     setTimeout(()=>{doLogin(u);closeM('register');},900);
-  }catch(e){showAl('reg','Erro: '+e.message,'e');}
+  }catch(e){showAl2('reg','Erro: '+e.message,'e');}
   setLoad('btn-reg',false,'Criar conta');
 }
 async function loginUser(){
@@ -542,7 +770,7 @@ async function loginUser(){
   const cpf=document.getElementById('lg-cpf').value.trim();
   setLoad('btn-login',true,'Entrando…');
   const{data,error}=await db.from('users').select('*').eq('email',email).eq('cpf',cpf).single();
-  if(error||!data){showAl('login','E-mail ou CPF incorretos.','e');setLoad('btn-login',false,'Entrar');return;}
+  if(error||!data){showAl2('login','E-mail ou CPF incorretos.','e');setLoad('btn-login',false,'Entrar');return;}
   doLogin(data);closeM('login');setLoad('btn-login',false,'Entrar');
 }
 function doLogin(u){me=u;localStorage.setItem('avgas_me',JSON.stringify(u));refreshUI();}
@@ -563,20 +791,21 @@ function refreshUI(){
   }
 }
 
-// PRICES
+// ── PRICES (submit) ─────────────────────────────────────────
 async function submitPrice(){
   const icao=document.getElementById('rep-icao').value;
   const fuel=document.getElementById('rep-fuel').value;
+  const ptype=document.getElementById('rep-ptype').value;
   const price=parseFloat(document.getElementById('rep-price').value);
   if(!icao) return fb('Selecione um aeródromo.','e');
   if(!price||price<=0) return fb('Informe um preço válido.','e');
   setLoad('btn-env',true,'…');
   try{
-    const pr=await dbI('prices',{icao,fuel_type:fuel,price,user_email:me.email});
+    const pr=await dbI('prices',{icao,fuel_type:fuel,price,price_type:ptype,user_email:me.email});
     prices.unshift(pr);
-    await addLog('price',`R$ ${price.toFixed(2)} (${fuel}) em ${icao}`);
+    await addLog('price',`R$ ${price.toFixed(2)} (${fuel}/${ptype}) em ${icao}`);
     document.getElementById('rep-price').value='';
-    fb(`R$ ${price.toFixed(2)} registrado (${fuel}) em ${icao}!`,'s');
+    fb(`R$ ${price.toFixed(2)} (${ptype}) registrado em ${icao}!`,'s');
     addMK(aeros.find(a=>a.icao===icao));
     updateStats();populateSB();
   }catch(e){fb('Erro: '+e.message,'e');}
@@ -588,212 +817,186 @@ function fb(msg,t){
   setTimeout(()=>el.style.display='none',3500);
 }
 
-// SIDEBAR
+// ── SIDEBAR ──────────────────────────────────────────────────
 function populateSB(){
   const sel=document.getElementById('rep-icao');
-  sel.innerHTML='<option value="">Selecione o aeródromo…</option>'+[...aeros].sort((a,b)=>a.icao.localeCompare(b.icao)).map(a=>`<option value="${a.icao}">${a.icao} — ${a.nome}</option>`).join('');
+  sel.innerHTML='<option value="">Selecione o aeródromo…</option>'+
+    [...aeros].sort((a,b)=>a.icao.localeCompare(b.icao)).map(a=>`<option value="${a.icao}">${a.icao} — ${a.nome}</option>`).join('');
   populateRepList();
-  populateAeroList('');
+  populateAeroList(_q||'');
 }
+
+// Aba Preços: aeródromos COM preço nos combustíveis ATIVOS, menor→maior
 function populateRepList(){
-  const el=document.getElementById('rep-list'),last=prices.slice(0,25);
-  el.innerHTML=last.length?last.map(p=>`<div class="ur">
-    <div class="ul2"><div class="uic">${p.icao}</div><div class="uwh">${p.user_email?.split('@')[0]||'?'}</div></div>
-    <div style="text-align:right">
-      <div class="up2">R$ ${(+p.price).toFixed(2)}</div>
-      <div class="uf"><span class="fdot ${FCLASS[p.fuel_type]||''}" style="width:6px;height:6px"></span>${p.fuel_type||'AVGAS'}</div>
-      <div class="ud">${fmtD(p.created_at)}</div>
-    </div>
-  </div>`).join(''):`<div class="empty">Nenhuma atualização</div>`;
+  const el=document.getElementById('rep-list');
+
+  // For each aero, find the cheapest price among active fuels
+  const rows=[];
+  for(const a of aeros){
+    let cheapest=null;
+    for(const f of FUELS){
+      if(!activeFuels.has(f)) continue;
+      const p=getByFuel(a.icao,f);
+      if(!p) continue;
+      if(!cheapest||+p.price < +cheapest.p.price) cheapest={p,f};
+    }
+    if(cheapest) rows.push({a,best:cheapest});
+  }
+  rows.sort((x,y)=>(+x.best.p.price)-(+y.best.p.price));
+
+  if(!rows.length){
+    el.innerHTML=`<div class="empty">Nenhum aeródromo com preço para os combustíveis selecionados</div>`;
+    return;
+  }
+
+  el.innerHTML=rows.map((r,i)=>{
+    const color=FUEL_COLOR[r.best.f]||'#f4a620';
+    const ptype=r.best.p.price_type||'vista';
+    // Check if other price type also exists for same fuel
+    const otherType=ptype==='vista'?'prazo':'vista';
+    const otherP=prices.find(p=>p.icao===r.a.icao&&p.fuel_type===r.best.f&&(p.price_type||'vista')===otherType);
+    return`<div class="ur" style="cursor:pointer" onclick="flyTo('${r.a.icao}')">
+      <div style="font-size:11px;font-weight:700;color:var(--mut);min-width:22px;text-align:center">${i+1}º</div>
+      <div class="ul2">
+        <div class="uic" style="color:${color}">${r.a.icao}</div>
+        <div class="uan">${r.a.nome}</div>
+        <div class="uf" style="margin-top:2px"><span class="fdot dc-${FC[r.best.f]}" style="width:6px;height:6px"></span>${r.best.f}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="up2" style="color:${color}">R$ ${(+r.best.p.price).toFixed(2)}</div>
+        <div class="upt-${ptype==='vista'?'v':'p'}">${ptype==='vista'?'À vista':'A prazo'}</div>
+        ${otherP?`<div class="ud" style="margin-top:1px">${otherType==='vista'?'Vista':'Prazo'}: R$ ${(+otherP.price).toFixed(2)}</div>`:''}
+        <div class="ud">${fmtS(r.best.p.created_at)}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
+
 let _q='';
 function filterAeros(q){_q=q.toLowerCase();populateAeroList(_q);}
 function populateAeroList(q){
   const el=document.getElementById('aero-list');
-  const DEF_SET=new Set(['SBGR','SBSP','SBJD','SBKP','SBBE','SBBR','SBGL','SBSV','SBRF','SBFZ','SBPA','SBCT','SBFL','SBMN','SBEG','SBMO','SBTE','SBSL','SBMG','SBLO','SBCG','SBCY','SBVT','SBJP','SBNT','SBMK','SBUR','SBUL','SBGO','SWLC']);
   const list=aeros.filter(a=>!q||a.icao.toLowerCase().includes(q)||a.nome.toLowerCase().includes(q)).sort((a,b)=>a.icao.localeCompare(b.icao));
   if(!list.length){
-    // If query looks like an ICAO (2-4 letters) and user is logged in, offer to add
     const isIcao=q&&q.length>=2&&q.length<=4&&/^[a-z0-9]+$/.test(q);
     const icaoUp=q.toUpperCase();
     el.innerHTML=`<div class="empty" style="padding:20px 16px">
-      <div style="margin-bottom:12px;color:var(--mut)">Nenhum resultado para <b style="color:var(--txt)">${q||'—'}</b></div>
+      <div style="margin-bottom:12px">Nenhum resultado para <b style="color:var(--txt)">${q||'—'}</b></div>
       ${(isIcao&&me)?`<button class="btn btn-a btn-sm" id="btn-add-icao" onclick="addAeroFromSearch('${icaoUp}')">
         <span class="spin" id="icao-spin" style="display:none"></span> ➕ Adicionar ${icaoUp} ao mapa
       </button><div id="icao-search-msg" style="margin-top:8px;font-size:12px;color:var(--mut)"></div>`
-      :me?`<button class="btn btn-sm" onclick="openM('new')">➕ Adicionar aeródromo manualmente</button>`
+      :me?`<button class="btn btn-sm" onclick="openM('new')">➕ Adicionar manualmente</button>`
       :`<span style="font-size:12px">Faça login para adicionar aeródromos</span>`}
     </div>`;
     return;
   }
   el.innerHTML=list.map(a=>{
-    const best=getLatestAny(a.icao);const isNew=!DEF_SET.has(a.icao);
+    const best=bestActive(a.icao);
+    const color=best?FUEL_COLOR[best.f]:'var(--mut)';
+    const isUserAdded=!['SBGR','SBSP','SBJD','SBKP','SBBE','SBBR','SBGL','SBSV','SBRF','SBFZ','SBPA','SBCT','SBFL','SBMN','SBEG','SBMO','SBTE','SBSL','SBMG','SBLO','SBCG','SBCY','SBVT','SBJP','SBNT','SBMK','SBUR','SBUL','SBGO','SWLC'].includes(a.icao)&&!['SBAT','SBHT','SBAR','SBAU','SBAE','SBJP','SBBE','SBBH','SBBV','SBDB','SBBR','SBCN','SBKP','SBCG','SBCX','SBCR','SBJE','SBCZ','SBBI','SBDO','SBFL','SBFZ','SBFI','SIMK','SBZM','SBGO','SBGW','SBGR','SBIH','SBJU','SBCF','SBLO','SBMQ','SBEG','SBMA','SBMG','SBMK','SBNF','SBPJ','SBCJ','SBPK','SBPL','SBPP','SBPA','SBPS','SBPV','SBDN','SBRF','SBRP','SBRB','SBGL','SBJR','SBRJ','SBMO','SBSV','SBSN','SDSC','SBUA','SBSG','SBSR','SBSJ','SBCT','SBSL','SBMT','SBSP','SBSI','SBTT','SBTF','SBTE','SBTG','SBUR','SBUL','SBTC','SBUG','SBCY','SBVH','SBVT','SBVC'].includes(a.icao);
     return`<div class="ar" onclick="flyTo('${a.icao}')">
-      <span class="aic">${a.icao}</span><span class="an">${a.nome}</span>
-      ${isNew?`<span class="nb">Novo</span>`:''}
-      ${best?`<span class="ap2">R$ ${(+best.p.price).toFixed(2)}</span>`:`<span class="and">—</span>`}
+      <span class="aic" style="color:${color}">${a.icao}</span>
+      <span class="an">${a.nome}</span>
+      ${isUserAdded?`<span class="nb">Novo</span>`:''}
+      ${best?`<span class="ap2" style="color:${color}">R$ ${(+best.p.price).toFixed(2)}</span>`:`<span class="and">—</span>`}
     </div>`;
   }).join('');
 }
+
 function showHist(a,fuel){
-  fuel=fuel||popupFuel||'AVGAS';
-  const el=document.getElementById('hist-list'),h=getLast6(a.icao,fuel);
+  fuel=fuel||'AVGAS';
+  const el=document.getElementById('hist-list');
+  const h=getHistFuel(a.icao,fuel);
+  const color=FUEL_COLOR[fuel]||'#f4a620';
   el.innerHTML=h.length
-    ?`<div style="padding:10px 16px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mut)">${a.icao} — ${a.nome} (${fuel})</div>`+h.map(p=>`<div class="ur"><div class="ul2"><div class="uic" style="color:var(--mut);font-size:11px;font-weight:400">${fmtD(p.created_at)}</div><div class="uwh">${p.user_email?.split('@')[0]||'?'}</div></div><div class="up2">R$ ${(+p.price).toFixed(2)}</div></div>`).join('')
+    ?`<div style="padding:10px 16px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mut)">${a.icao} — ${a.nome} · ${fuel}</div>`+
+      h.map(p=>{const pt=p.price_type||'vista';return`<div class="ur">
+        <div class="ul2"><div style="font-size:11px;color:var(--mut)">${fmtD(p.created_at)}</div><div style="font-size:10px;color:var(--mut)">${p.user_email?.split('@')[0]||'?'}</div></div>
+        <div style="text-align:right">
+          <div style="font-size:14px;font-weight:700;color:${color}">R$ ${(+p.price).toFixed(2)}</div>
+          <div class="upt-${pt}">${pt==='vista'?'À vista':'A prazo'}</div>
+        </div>
+      </div>`}).join('')
     :`<div class="empty">${a.icao} — sem histórico para ${fuel}</div>`;
   document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
   document.querySelector('[data-t="hist"]').classList.add('on');
   document.querySelectorAll('.tc2').forEach(t=>t.classList.remove('on'));
   document.getElementById('tab-hist').classList.add('on');
 }
+
 async function populateLog(){
   const el=document.getElementById('log-list');
   el.innerHTML=`<div class="empty"><span class="spin"></span> Carregando…</div>`;
   const logs=await dbQ('audit_log');
   if(!logs.length){el.innerHTML=`<div class="empty">Nenhuma ação registrada</div>`;return;}
-  el.innerHTML=`<div style="overflow-x:auto"><table class="lt"><thead><tr><th>Data</th><th>Usuário</th><th>Tipo</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody>${logs.map(l=>`<tr><td style="white-space:nowrap">${fmtD(l.created_at)}</td><td>${l.user_name?.split(' ')[0]||l.user_email}</td><td>${tLabel(l.user_type)}</td><td><span class="la ${l.action==='price'?'la-p':'la-c'}">${l.action==='price'?'Preço':'Criação'}</span></td><td>${l.detail||''}</td></tr>`).join('')}</tbody></table></div>`;
+  el.innerHTML=`<div style="overflow-x:auto"><table class="lt"><thead><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody>${logs.map(l=>`<tr>
+    <td style="white-space:nowrap">${fmtD(l.created_at)}</td>
+    <td>${l.user_name?.split(' ')[0]||l.user_email}</td>
+    <td><span class="la ${l.action==='price'?'la-p':l.action==='delete_price'?'la-d':'la-c'}">${l.action==='price'?'Preço':l.action==='delete_price'?'Delete':'Criação'}</span></td>
+    <td>${l.detail||''}</td>
+  </tr>`).join('')}</tbody></table></div>`;
 }
+
 function flyTo(icao){
   const a=aeros.find(a=>a.icao===icao);if(!a)return;
   map.flyTo([a.lat,a.lng],11,{duration:1});
   setTimeout(()=>showPopup(a),1100);
 }
+
 function updateStats(){
-  const w=aeros.filter(a=>getLatestAny(a.icao)).length;
+  const withPrice=aeros.filter(a=>FUELS.some(f=>activeFuels.has(f)&&getByFuel(a.icao,f))).length;
   document.getElementById('st-t').textContent=`${aeros.length} aeródromos`;
-  document.getElementById('st-p').textContent=`${w} com preço`;
+  document.getElementById('st-p').textContent=`${withPrice} com preço`;
 }
-// UI
+
+// ── ICAO LOOKUP ──────────────────────────────────────────────
+async function addAeroFromSearch(icao){
+  const btn=document.getElementById('btn-add-icao');
+  const msg=document.getElementById('icao-search-msg');
+  const spin=document.getElementById('icao-spin');
+  if(!btn) return;
+  btn.disabled=true;spin.style.display='inline-block';
+  msg.textContent='Buscando coordenadas para '+icao+'…';
+  let lat=null,lng=null,nome=icao;
+  try{const r=await fetch(`https://api.aviationapi.com/v1/airports?apt=${icao}`);if(r.ok){const d=await r.json();const l=Object.values(d);if(l.length&&l[0].length){const a=l[0][0];lat=parseFloat(a.latitude);lng=parseFloat(a.longitude);nome=a.facility_name||icao;}}}catch(_){}
+  if(!lat){try{const r=await fetch(`https://ourairports.com/airports/${icao}/row.json`);if(r.ok){const d=await r.json();lat=parseFloat(d.latitude_deg);lng=parseFloat(d.longitude_deg);nome=d.name||icao;}}catch(_){}}
+  btn.disabled=false;spin.style.display='none';
+  if(lat&&lng&&!isNaN(lat)&&!isNaN(lng)){
+    msg.textContent='';
+    pendLL={lat,lng};
+    document.getElementById('coord-txt').textContent=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('new-icao').value=icao;
+    document.getElementById('new-nome').value=nome;
+    if(tmpMK) tmpMK.remove();
+    tmpMK=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="tmppin"></div>',iconAnchor:[7,7]})}).addTo(map);
+    map.flyTo([lat,lng],10,{duration:1.2});
+    setTimeout(()=>openM('new'),600);
+  }else{
+    msg.textContent='Não encontrei coordenadas. Posicione manualmente no mapa.';
+    setTimeout(()=>{document.getElementById('new-icao').value=icao;openM('new');},1200);
+  }
+}
+
+// ── UI HELPERS ───────────────────────────────────────────────
 function swTab(btn){
   const t=btn.dataset.t;
   document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
   document.querySelectorAll('.tc2').forEach(x=>x.classList.remove('on'));
   document.getElementById('tab-'+t).classList.add('on');
   if(t==='log') populateLog();
+  if(t==='rep') populateRepList();
 }
 function toggleSB(){sbOpen=!sbOpen;document.getElementById('sb').classList.toggle('on',sbOpen);document.getElementById('fab-main').textContent=sbOpen?'✕':'☰';}
 function openM(id){document.getElementById('mo-'+id).classList.add('on');}
 function closeM(id){document.getElementById('mo-'+id).classList.remove('on');}
 document.querySelectorAll('.mo').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on');}));
 function pickType(el){document.querySelectorAll('.tc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');regType=el.dataset.type;}
-function showAl(id,msg,t){const el=document.getElementById('al-'+id);el.style.display='block';el.className=`al al-${t==='s'?'s':t==='i'?'i':t==='w'?'w':'e'}`;el.textContent=msg;}
-function setLoad(id,on,label){const el=document.getElementById(id);el.disabled=on;el.innerHTML=on?`<span class="spin"></span> ${label}`:label;}
+function showAl2(id,msg,t){const el=document.getElementById('al-'+id);el.style.display='block';el.className=`al al-${t==='s'?'s':t==='i'?'i':t==='w'?'w':'e'}`;el.textContent=msg;}
+function setLoad(id,on,label){const el=document.getElementById(id);if(!el)return;el.disabled=on;el.innerHTML=on?`<span class="spin"></span> ${label}`:label;}
 function mCPF(el){let v=el.value.replace(/\D/g,'').slice(0,11);if(v.length>9)v=v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4');else if(v.length>6)v=v.replace(/^(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3');else if(v.length>3)v=v.replace(/^(\d{3})(\d{0,3})/,'$1.$2');el.value=v;}
 function fmtD(ts){const d=new Date(ts);return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
 function fmtS(ts){const d=new Date(ts);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
 function tLabel(t){return t==='fornecedor'?'Fornecedor':t==='piloto'?'Piloto':t==='interessado'?'Interessado':t||'–';}
-
-// ── FUEL FILTER ──────────────────────────────────────────────
-let activeFuels=new Set(['AVGAS','JET-A','JET-A INTER','BR JET PLUS','BR JET PLUS INTER']);
-
-function toggleFuel(btn){
-  const f=btn.dataset.fuel;
-  if(activeFuels.has(f)){
-    // Don't allow deselecting the last one
-    if(activeFuels.size===1) return;
-    activeFuels.delete(f);
-    btn.classList.remove('on');
-  } else {
-    activeFuels.add(f);
-    btn.classList.add('on');
-  }
-  // Rebuild all markers to show/hide based on filter
-  aeros.forEach(a=>updateMKVisibility(a));
-}
-
-function updateMKVisibility(a){
-  if(!MK[a.icao]) return;
-  // Check if this aerodrome has any price for an active fuel
-  const hasActiveFuel=FUELS.some(f=>activeFuels.has(f)&&getLatestByFuel(a.icao,f));
-  // Always show aeros that have no price (so they're discoverable)
-  // Hide only if it has prices BUT none match active fuels
-  const hasSomeprice=FUELS.some(f=>getLatestByFuel(a.icao,f));
-  if(hasSomeprice&&!hasActiveFuel){
-    MK[a.icao].setOpacity(0);
-    MK[a.icao].options.interactive=false;
-    MK[a.icao].getElement()&&(MK[a.icao].getElement().style.pointerEvents='none');
-  } else {
-    MK[a.icao].setOpacity(1);
-    MK[a.icao].options.interactive=true;
-    MK[a.icao].getElement()&&(MK[a.icao].getElement().style.pointerEvents='auto');
-  }
-}
-
-// ── ICAO LOOKUP (OpenAIP / fallback manual) ───────────────────
-async function addAeroFromSearch(icao){
-  const btn=document.getElementById('btn-add-icao');
-  const msg=document.getElementById('icao-search-msg');
-  const spin=document.getElementById('icao-spin');
-  if(!btn) return;
-  btn.disabled=true; spin.style.display='inline-block';
-  msg.textContent='Buscando coordenadas para '+icao+'…';
-
-  let lat=null,lng=null,nome=icao;
-
-  // Try OpenAIP public API (no key needed for basic lookup)
-  try{
-    const r=await fetch(`https://api.aviationapi.com/v1/airports?apt=${icao}`);
-    if(r.ok){
-      const d=await r.json();
-      const list=Object.values(d);
-      if(list.length&&list[0].length){
-        const a=list[0][0];
-        lat=parseFloat(a.latitude);lng=parseFloat(a.longitude);
-        nome=a.facility_name||icao;
-      }
-    }
-  }catch(_){}
-
-  // Fallback: try ourairports CSV via a CORS proxy
-  if(!lat){
-    try{
-      const r=await fetch(`https://ourairports.com/airports/${icao}/row.json`);
-      if(r.ok){
-        const d=await r.json();
-        lat=parseFloat(d.latitude_deg);lng=parseFloat(d.longitude_deg);
-        nome=d.name||icao;
-      }
-    }catch(_){}
-  }
-
-  // Fallback: REDEMET (Brazilian aeronautical data)
-  if(!lat){
-    try{
-      const r=await fetch(`https://api.redemet.aer.mil.br/aerodromos/info?api_key=&icao=${icao}`,{headers:{'accept':'application/json'}});
-      if(r.ok){
-        const d=await r.json();
-        if(d.data&&d.data.lat&&d.data.lon){
-          lat=parseFloat(d.data.lat);lng=parseFloat(d.data.lon);
-          nome=d.data.nome||icao;
-        }
-      }
-    }catch(_){}
-  }
-
-  btn.disabled=false; spin.style.display='none';
-
-  if(lat&&lng&&!isNaN(lat)&&!isNaN(lng)){
-    msg.textContent='';
-    // Pre-fill modal and set position
-    pendLL={lat,lng};
-    document.getElementById('coord-txt').textContent=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    document.getElementById('new-icao').value=icao;
-    document.getElementById('new-nome').value=nome;
-    // Place temp marker
-    if(tmpMK) tmpMK.remove();
-    tmpMK=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="tmppin"></div>',iconAnchor:[7,7]})}).addTo(map);
-    map.flyTo([lat,lng],10,{duration:1.2});
-    // Open modal after fly
-    setTimeout(()=>openM('new'),600);
-  } else {
-    msg.textContent='Não encontrei coordenadas automáticas. Abre o mapa e posicione manualmente.';
-    // Open modal for manual placement
-    setTimeout(()=>{
-      document.getElementById('new-icao').value=icao;
-      openM('new');
-    },1200);
-  }
-}
 
 initMap();
 if(me) refreshUI();
