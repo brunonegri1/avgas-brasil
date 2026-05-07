@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AVGAS Brasil — Preços em Aeródromos</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--sky:#0a1628;--sky-mid:#102040;--sky-light:#1a3055;--accent:#f4a620;--accent-dim:rgba(244,166,32,0.15);--green:#2ec97e;--red:#e84040;--blue:#4db8ff;--text:#e8eaf2;--muted:#8a9ab5;--border:rgba(255,255,255,0.08);--card:rgba(10,22,40,0.97);--ibg:rgba(255,255,255,0.06);--r:12px;--rs:8px;--sw:340px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--text);height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+.topbar{height:52px;background:var(--sky-mid);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:1000;flex-shrink:0;gap:8px}
+.logo{display:flex;align-items:center;gap:8px;font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:-.5px;flex-shrink:0}
+.logo-icon{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.logo span{color:var(--accent)}
+.tbr{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn{padding:7px 13px;border-radius:var(--rs);border:1px solid var(--border);background:var(--ibg);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;white-space:nowrap;touch-action:manipulation}
+.btn:hover,.btn:active{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+.btn-a{background:var(--accent);border-color:var(--accent);color:#0a1628;font-weight:700}
+.btn-a:hover,.btn-a:active{background:#fdb93c;border-color:#fdb93c}
+.btn-sm{padding:6px 11px;font-size:12px}
+.btn-block{width:100%}
+#map{flex:1;z-index:1}
+.leaflet-container{background:#0d1f38}
+.leaflet-control-zoom a{background:var(--sky-mid)!important;color:var(--text)!important;border-color:var(--border)!important;width:30px!important;height:30px!important;line-height:30px!important}
+.leaflet-control-zoom a:hover{background:var(--sky-light)!important}
+.leaflet-control-attribution{display:none}
+.leaflet-control-zoom{margin-bottom:60px!important}
+.mk-outer{display:flex;flex-direction:column;align-items:center;cursor:pointer;width:72px}
+.mk-box{background:#102040;border:2px solid #f4a620;border-radius:7px;padding:4px 7px 3px;width:100%;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 10px rgba(244,166,32,.2)}
+.mk-icao{display:block;font-size:11px;font-weight:700;color:#f4a620;letter-spacing:.04em;line-height:1.3;font-family:'Space Grotesk',sans-serif}
+.mk-price{display:block;font-size:10px;font-weight:600;color:#8ecff7;line-height:1.3;font-family:'Space Grotesk',sans-serif}
+.mk-date{display:block;font-size:9px;color:#8a9ab5;line-height:1.3;font-family:'Space Grotesk',sans-serif}
+.mk-pin{width:2px;height:7px;background:#f4a620;margin:0 auto}
+.mk-dot{width:6px;height:6px;border-radius:50%;background:#f4a620;border:1px solid #0a1628}
+.leaflet-popup-content-wrapper{background:#102040!important;border:1px solid rgba(255,255,255,.1)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.6)!important;color:#e8eaf2!important;padding:0!important}
+.leaflet-popup-content{margin:0!important;width:268px!important}
+.leaflet-popup-tip{background:#102040!important}
+.leaflet-popup-close-button{color:#8a9ab5!important;font-size:18px!important;top:10px!important;right:10px!important}
+.pi{padding:14px 16px 16px}
+.pi-icao{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#f4a620}
+.pi-name{font-size:11px;color:#8a9ab5;margin:1px 0 10px}
+.pi-pbox{background:rgba(244,166,32,.1);border:1px solid rgba(244,166,32,.3);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.pi-pval{font-size:22px;font-weight:700;color:#f4a620}
+.pi-empty{text-align:center;padding:10px 0;color:#8a9ab5;font-size:12px;font-style:italic}
+.pi-htitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8a9ab5;margin-bottom:6px}
+.pi-hrow{display:flex;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:11px}
+.pi-hrow:last-child{border-bottom:none}
+.pi-hdate{color:#8a9ab5;flex-shrink:0}
+.pi-hwho{color:#8a9ab5;flex:1;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pi-hprice{font-weight:600;flex-shrink:0}
+.mo{display:none;position:fixed;inset:0;background:rgba(5,12,28,.88);z-index:3000;align-items:center;justify-content:center;padding:16px}
+.mo.on{display:flex}
+.md{background:var(--sky-mid);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:430px;max-height:90dvh;overflow-y:auto;animation:su .22s ease}
+@keyframes su{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mh{padding:16px 20px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--sky-mid);z-index:2}
+.mt{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+.mc{width:28px;height:28px;border-radius:6px;background:var(--ibg);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.mc:hover{color:var(--text);background:rgba(255,255,255,.1)}
+.mb{padding:16px 20px 22px}
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px}
+.fc{width:100%;padding:10px 13px;background:var(--ibg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;transition:border-color .18s;outline:none;-webkit-appearance:none;appearance:none}
+.fc:focus{border-color:var(--accent)}
+.fc option{background:#1a3055}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tc{padding:11px 6px;background:var(--ibg);border:1px solid var(--border);border-radius:var(--rs);text-align:center;cursor:pointer;transition:all .18s;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);touch-action:manipulation}
+.tc .ti{font-size:18px;display:block;margin-bottom:5px}
+.tc:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+.tc.sel{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
+.al{padding:9px 13px;border-radius:var(--rs);font-size:13px;margin-bottom:13px}
+.al-s{background:rgba(46,201,126,.1);border:1px solid rgba(46,201,126,.3);color:var(--green)}
+.al-e{background:rgba(232,64,64,.1);border:1px solid rgba(232,64,64,.3);color:var(--red)}
+.al-i{background:rgba(77,184,255,.1);border:1px solid rgba(77,184,255,.3);color:var(--blue)}
+.pw{position:relative}
+.pp{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;font-weight:600;pointer-events:none}
+.pf{padding-left:30px!important}
+.sb{position:fixed;right:0;top:52px;bottom:0;width:var(--sw);background:var(--card);border-left:1px solid var(--border);z-index:900;display:none;flex-direction:column;overflow:hidden}
+.sb.on{display:flex}
+.sbh{padding:13px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.ub{display:flex;align-items:center;gap:10px}
+.ua{width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--sky);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.un{font-weight:600;font-size:14px}
+.ut{font-size:10px;color:var(--muted);background:var(--ibg);border:1px solid var(--border);border-radius:20px;padding:2px 9px;display:inline-block;margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
+.tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.tb{flex:1;padding:9px 4px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .18s;margin-bottom:-1px;touch-action:manipulation}
+.tb:hover{color:var(--text)}
+.tb.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tc2{display:none;flex:1;flex-direction:column;overflow:hidden}
+.tc2.on{display:flex}
+.sh{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:9px}
+.pr{display:flex;gap:7px;align-items:flex-end}
+.sbl{flex:1;overflow-y:auto}
+.sbl::-webkit-scrollbar{width:3px}
+.sbl::-webkit-scrollbar-thumb{background:var(--sky-light);border-radius:2px}
+.ur{padding:9px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ul2{flex:1;min-width:0}
+.uic{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.05em}
+.uwh{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.up2{font-size:14px;font-weight:700;white-space:nowrap}
+.ud{font-size:10px;color:var(--muted);text-align:right}
+.sw2{padding:10px 16px;border-bottom:1px solid var(--border);position:relative;flex-shrink:0}
+.si{font-size:13px;position:absolute;left:28px;top:50%;transform:translateY(-50%);pointer-events:none}
+.sin{width:100%;padding:8px 10px 8px 30px;background:var(--ibg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none}
+.sin:focus{border-color:var(--accent)}
+.ar{padding:9px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .14s;gap:6px;touch-action:manipulation}
+.ar:hover,.ar:active{background:rgba(255,255,255,.03)}
+.aic{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--accent);flex-shrink:0;min-width:52px}
+.an{font-size:11px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ap2{font-size:12px;font-weight:600;flex-shrink:0}
+.and{font-size:11px;color:var(--muted);font-style:italic;flex-shrink:0}
+.nb{font-size:9px;padding:2px 6px;border-radius:20px;flex-shrink:0;text-transform:uppercase;letter-spacing:.05em;font-weight:700;background:rgba(77,184,255,.15);color:var(--blue);border:1px solid rgba(77,184,255,.3)}
+.lt{width:100%;font-size:11px;border-collapse:collapse}
+.lt th{padding:8px 10px;background:var(--sky-light);color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;text-align:left;position:sticky;top:0}
+.lt td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.lt tr:last-child td{border-bottom:none}
+.la{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:700}
+.la-p{background:rgba(244,166,32,.15);color:var(--accent)}
+.la-c{background:rgba(46,201,126,.15);color:var(--green)}
+.stats{position:fixed;bottom:16px;left:16px;display:flex;gap:8px;z-index:500;pointer-events:none}
+.sp{background:rgba(10,22,40,.92);border:1px solid var(--border);border-radius:30px;padding:6px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px;backdrop-filter:blur(6px)}
+.sd{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.sd.g{background:var(--green)}
+.fabs{position:fixed;right:16px;bottom:16px;display:none;flex-direction:column;align-items:flex-end;gap:10px;z-index:800}
+.fabs.on{display:flex}
+.fab{width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 3px 12px rgba(0,0,0,.4);touch-action:manipulation}
+.fab-m{background:var(--accent);color:var(--sky);font-size:20px}
+.fab-m:hover,.fab-m:active{transform:scale(1.06);box-shadow:0 4px 16px rgba(244,166,32,.45)}
+.fab-s{background:var(--sky-mid);color:var(--text);border:1px solid var(--border)}
+.fab-s:hover,.fab-s:active{background:var(--sky-light)}
+.flbl{background:rgba(10,22,40,.92);border:1px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px;white-space:nowrap}
+.frow{display:flex;align-items:center;gap:8px}
+#map.pick{cursor:crosshair!important}
+.pbanner{position:fixed;top:58px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0a1628;padding:8px 18px;border-radius:30px;font-size:13px;font-weight:700;z-index:800;display:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.pbanner.on{display:block}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){:root{--sw:100vw}.stats{display:none}.fabs{bottom:12px;right:12px}.md{max-width:100%}.leaflet-control-zoom{display:none!important}.fr{grid-template-columns:1fr}.logo span{display:none}}
+@media(max-width:380px){.topbar{padding:0 10px}.btn{padding:6px 9px;font-size:12px}}
+.empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><div class="logo-icon">⛽</div>AVGAS <span>Brasil</span></div>
+  <div class="tbr" id="tbr">
+    <button class="btn" onclick="openM('login')">Entrar</button>
+    <button class="btn btn-a" onclick="openM('register')">Cadastrar</button>
+  </div>
+</div>
+
+<div id="map"></div>
+<div class="pbanner" id="pbanner">📍 Clique no mapa para posicionar &nbsp;·&nbsp; <span onclick="cancelPick()" style="text-decoration:underline;cursor:pointer">Cancelar</span></div>
+
+<div class="stats">
+  <div class="sp"><div class="sd"></div><span id="st-total">0 aeródromos</span></div>
+  <div class="sp"><div class="sd g"></div><span id="st-price">0 com preço</span></div>
+</div>
+
+<div class="fabs" id="fabs">
+  <div class="frow"><span class="flbl">Novo aeródromo</span><button class="fab fab-s" onclick="startPick()">📍</button></div>
+  <div class="frow"><span class="flbl">Painel</span><button class="fab fab-m" id="fab-main" onclick="toggleSB()">☰</button></div>
+</div>
+
+<div class="sb" id="sb">
+  <div class="sbh">
+    <div class="ub">
+      <div class="ua" id="ua">?</div>
+      <div><div class="un" id="un">–</div><span class="ut" id="ut">–</span></div>
+      <button class="btn btn-sm" style="margin-left:auto" onclick="logout()">Sair</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tb on" data-t="rep" onclick="swTab(this)">Preço</button>
+    <button class="tb" data-t="aeros" onclick="swTab(this)">Pontos</button>
+    <button class="tb" data-t="hist" onclick="swTab(this)">Hist.</button>
+    <button class="tb" data-t="log" onclick="swTab(this)">Log</button>
+  </div>
+  <div class="tc2 on" id="tab-rep">
+    <div class="sh">
+      <div class="sl">Reportar preço de AVGAS</div>
+      <div class="fg" style="margin-bottom:9px"><select class="fc" id="rep-icao"></select></div>
+      <div class="pr">
+        <div class="pw" style="flex:1"><span class="pp">R$</span><input type="number" class="fc pf" id="rep-price" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
+        <button class="btn btn-a btn-sm" onclick="submitPrice()">Enviar</button>
+      </div>
+      <div id="rep-fb" style="margin-top:9px;display:none"></div>
+    </div>
+    <div style="padding:10px 16px 6px;flex-shrink:0"><div class="sl">Últimas atualizações</div></div>
+    <div class="sbl" id="rep-list"></div>
+  </div>
+  <div class="tc2" id="tab-aeros">
+    <div class="sw2"><span class="si">🔍</span><input class="sin" placeholder="Buscar ICAO ou nome…" oninput="filterAeros(this.value)"></div>
+    <div class="sbl" id="aero-list"></div>
+  </div>
+  <div class="tc2" id="tab-hist">
+    <div class="sbl" id="hist-list"><div class="empty">Clique em um aeródromo no mapa</div></div>
+  </div>
+  <div class="tc2" id="tab-log">
+    <div class="sbl" id="log-list"></div>
+  </div>
+</div>
+
+<!-- MODAL REGISTER -->
+<div class="mo" id="mo-register">
+  <div class="md">
+    <div class="mh"><div class="mt">Criar conta</div><button class="mc" onclick="closeM('register')">✕</button></div>
+    <div class="mb">
+      <div id="al-reg" class="al" style="display:none"></div>
+      <div class="fg">
+        <label class="fl">Tipo de usuário</label>
+        <div class="tg">
+          <div class="tc" data-type="fornecedor" onclick="pickType(this)"><span class="ti">🏢</span>Fornecedor</div>
+          <div class="tc" data-type="piloto" onclick="pickType(this)"><span class="ti">✈️</span>Piloto</div>
+          <div class="tc" data-type="interessado" onclick="pickType(this)"><span class="ti">👁️</span>Interessado</div>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Nome completo</label><input class="fc" id="rg-nome" placeholder="Seu nome"></div>
+      <div class="fr">
+        <div class="fg" style="margin-bottom:0"><label class="fl">CPF</label><input class="fc" id="rg-cpf" placeholder="000.000.000-00" maxlength="14" oninput="mCPF(this)" inputmode="numeric"></div>
+        <div class="fg" style="margin-bottom:0"><label class="fl">E-mail</label><input type="email" class="fc" id="rg-email" placeholder="seu@email.com"></div>
+      </div>
+      <button class="btn btn-a btn-block" style="margin-top:15px" id="btn-register" onclick="registerUser()">Criar conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LOGIN -->
+<div class="mo" id="mo-login">
+  <div class="md">
+    <div class="mh"><div class="mt">Entrar</div><button class="mc" onclick="closeM('login')">✕</button></div>
+    <div class="mb">
+      <div id="al-login" class="al" style="display:none"></div>
+      <div class="fg"><label class="fl">E-mail</label><input type="email" class="fc" id="lg-email" placeholder="seu@email.com"></div>
+      <div class="fg"><label class="fl">CPF (usado como senha)</label><input class="fc" id="lg-cpf" placeholder="000.000.000-00" maxlength="14" oninput="mCPF(this)" inputmode="numeric"></div>
+      <button class="btn btn-a btn-block" id="btn-login" style="margin-top:4px" onclick="loginUser()">Entrar</button>
+      <p style="text-align:center;margin-top:12px;font-size:13px;color:var(--muted)">Sem conta? <a href="#" onclick="openM('register');closeM('login');return false" style="color:var(--accent);text-decoration:none">Cadastre-se</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVO AERÓDROMO -->
+<div class="mo" id="mo-new">
+  <div class="md">
+    <div class="mh"><div class="mt">Novo ponto de abastecimento</div><button class="mc" onclick="closeM('new');cancelPick()">✕</button></div>
+    <div class="mb">
+      <div id="al-new" class="al" style="display:none"></div>
+      <div class="al al-i" style="margin-bottom:13px">📍 Posição: <strong id="coord-txt">–</strong></div>
+      <div class="fr">
+        <div class="fg" style="margin-bottom:0"><label class="fl">Indicativo ICAO</label><input class="fc" id="new-icao" placeholder="ex: SBXX" maxlength="4" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="fg" style="margin-bottom:0"><label class="fl">Nome</label><input class="fc" id="new-nome" placeholder="Nome / cidade"></div>
+      </div>
+      <div class="fg" style="margin-top:12px">
+        <label class="fl">Preço inicial AVGAS (opcional)</label>
+        <div class="pw"><span class="pp">R$</span><input type="number" class="fc pf" id="new-price" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
+      </div>
+      <button class="btn btn-a btn-block" id="btn-new" style="margin-top:13px" onclick="saveNewAero()">Salvar aeródromo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE ──
+const SB_URL = 'https://piflbejipeelgkivwqeo.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpZmxiZWppcGVlbGdraXZ3cWVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjE1MDcsImV4cCI6MjA5MzczNzUwN30._TxM_EZdObmZLoAgMy-x20o3-AQXjdXHoyrIZvNIuIo';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+// ── DEFAULTS ──
+const DEF = [
+  {icao:"SBGR",nome:"Guarulhos – Cumbica",lat:-23.4356,lng:-46.4731},
+  {icao:"SBSP",nome:"Congonhas",lat:-23.6261,lng:-46.6564},
+  {icao:"SBJD",nome:"Campo de Marte",lat:-23.5091,lng:-46.6383},
+  {icao:"SBKP",nome:"Campinas – Viracopos",lat:-23.0074,lng:-47.1345},
+  {icao:"SBBE",nome:"Belém – Val de Cans",lat:-1.3792,lng:-48.4763},
+  {icao:"SBBR",nome:"Brasília Internacional",lat:-15.8711,lng:-47.9186},
+  {icao:"SBGL",nome:"Galeão",lat:-22.8099,lng:-43.2505},
+  {icao:"SBSV",nome:"Salvador",lat:-12.9086,lng:-38.3225},
+  {icao:"SBRF",nome:"Recife – Guararapes",lat:-8.1265,lng:-34.9236},
+  {icao:"SBFZ",nome:"Fortaleza – Pinto Martins",lat:-3.7762,lng:-38.5326},
+  {icao:"SBPA",nome:"Porto Alegre",lat:-29.9944,lng:-51.1714},
+  {icao:"SBCT",nome:"Curitiba – Afonso Pena",lat:-25.5285,lng:-49.1758},
+  {icao:"SBFL",nome:"Florianópolis – Hercílio",lat:-27.6705,lng:-48.5525},
+  {icao:"SBMN",nome:"Manaus – Ponta Pelada",lat:-3.1460,lng:-59.9860},
+  {icao:"SBEG",nome:"Manaus – Eduardo Gomes",lat:-3.0386,lng:-60.0497},
+  {icao:"SBMO",nome:"Maceió",lat:-9.5108,lng:-35.7917},
+  {icao:"SBTE",nome:"Teresina",lat:-5.0599,lng:-42.8235},
+  {icao:"SBSL",nome:"São Luís",lat:-2.5854,lng:-44.2345},
+  {icao:"SBMG",nome:"Maringá",lat:-23.4762,lng:-52.0124},
+  {icao:"SBLO",nome:"Londrina",lat:-23.3336,lng:-51.1301},
+  {icao:"SBCG",nome:"Campo Grande",lat:-20.4687,lng:-54.6725},
+  {icao:"SBCY",nome:"Cuiabá",lat:-15.6529,lng:-56.1165},
+  {icao:"SBVT",nome:"Vitória – Eurico Salles",lat:-20.2579,lng:-40.2863},
+  {icao:"SBJP",nome:"João Pessoa",lat:-7.1459,lng:-34.9503},
+  {icao:"SBNT",nome:"Natal – Augusto Severo",lat:-5.9114,lng:-35.2477},
+  {icao:"SBMK",nome:"Montes Claros",lat:-16.7062,lng:-43.8189},
+  {icao:"SBUR",nome:"Uberaba",lat:-19.7648,lng:-47.9661},
+  {icao:"SBUL",nome:"Uberlândia",lat:-18.8836,lng:-48.2253},
+  {icao:"SBGO",nome:"Goiânia",lat:-16.6320,lng:-49.2207},
+  {icao:"SWLC",nome:"Lucas do Rio Verde",lat:-13.0364,lng:-55.9578},
+];
+const DEFSET = new Set(DEF.map(d=>d.icao));
+
+let map, MK={}, me=JSON.parse(localStorage.getItem('avgas_me')||'null');
+let aeros=[], prices=[], sbOpen=false, pickMode=false, pendLL=null, regType='';
+
+// ── SUPABASE HELPERS ──
+async function dbSelect(table, query='') {
+  let q = sb.from(table).select('*');
+  if (query) q = q.order('created_at', {ascending:false});
+  const {data,error} = await q;
+  if (error) { console.error(table, error); return []; }
+  return data || [];
+}
+
+async function dbInsert(table, row) {
+  const {data,error} = await sb.from(table).insert([row]).select();
+  if (error) throw error;
+  return data[0];
+}
+
+async function addLog(action, detail) {
+  if (!me) return;
+  await dbInsert('audit_log', {
+    user_email: me.email, user_name: me.nome,
+    user_type: me.type, action, detail
+  });
+}
+
+// ── SEED DEFAULT AEROS INTO DB ──
+async function seedAeros() {
+  const existing = await dbSelect('aeros');
+  const existSet = new Set(existing.map(a=>a.icao));
+  const toInsert = DEF.filter(a=>!existSet.has(a.icao));
+  for (const a of toInsert) {
+    await sb.from('aeros').insert([{icao:a.icao, nome:a.nome, lat:a.lat, lng:a.lng}]);
+  }
+}
+
+// ── MAP ──
+async function initMap() {
+  map = L.map('map',{zoomControl:true,attributionControl:false}).setView([-15.5,-48.5],5);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+  map.on('click', e => { if (!pickMode) return; pendLL=e.latlng; document.getElementById('coord-txt').textContent=`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`; openM('new'); });
+
+  await seedAeros();
+  await loadAll();
+}
+
+async function loadAll() {
+  aeros = await dbSelect('aeros','order');
+  prices = await dbSelect('prices','order');
+  aeros.forEach(a => addMK(a));
+  updateStats();
+  if (me) populateSB();
+}
+
+function getLatest(icao) { return prices.filter(p=>p.icao===icao).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]||null; }
+function getLast6(icao) { return prices.filter(p=>p.icao===icao).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,6); }
+
+function mkHTML(a) {
+  const l=getLatest(a.icao);
+  const ps=l?`R$ ${parseFloat(l.price).toFixed(2)}`:'—';
+  const ds=l?fmtS(l.created_at):'';
+  return `<div class="mk-outer"><div class="mk-box"><span class="mk-icao">${a.icao}</span><span class="mk-price">${ps}</span>${ds?`<span class="mk-date">${ds}</span>`:''}</div><div class="mk-pin"></div><div class="mk-dot"></div></div>`;
+}
+
+function addMK(a) {
+  if (MK[a.icao]) { MK[a.icao].remove(); delete MK[a.icao]; }
+  const ico=L.divIcon({className:'',html:mkHTML(a),iconAnchor:[36,46],iconSize:null});
+  const m=L.marker([a.lat,a.lng],{icon:ico});
+  m.on('click',()=>showPopup(a));
+  m.addTo(map);
+  MK[a.icao]=m;
+}
+
+function showPopup(a) {
+  const l=getLatest(a.icao), h=getLast6(a.icao);
+  const pbox = l
+    ? `<div class="pi-pbox"><div><div style="font-size:10px;color:#8a9ab5;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Preço atual</div><div style="font-size:10px;color:#8a9ab5;margin-top:2px">${fmtD(l.created_at)}</div></div><div class="pi-pval">R$ ${parseFloat(l.price).toFixed(2)}</div></div>`
+    : `<div class="pi-empty">Sem preço cadastrado</div>`;
+  const hh = h.length ? `<div class="pi-htitle">Últimas ${h.length} atualizações</div>`+h.map(p=>`<div class="pi-hrow"><span class="pi-hdate">${fmtS(p.created_at)}</span><span class="pi-hwho">${p.user_email?.split('@')[0]||'?'}</span><span class="pi-hprice">R$ ${parseFloat(p.price).toFixed(2)}</span></div>`).join('') : '';
+  L.popup({maxWidth:280}).setLatLng([a.lat,a.lng]).setContent(`<div class="pi"><div class="pi-icao">${a.icao}</div><div class="pi-name">${a.nome}</div>${pbox}${hh}</div>`).openOn(map);
+  showHist(a);
+}
+
+// ── PICK MODE ──
+function startPick() {
+  if (!me) return;
+  pickMode=true;
+  document.getElementById('map').classList.add('pick');
+  document.getElementById('pbanner').classList.add('on');
+  if (window.innerWidth<=600) { document.getElementById('sb').classList.remove('on'); sbOpen=false; }
+}
+function cancelPick() {
+  pickMode=false; pendLL=null;
+  document.getElementById('map').classList.remove('pick');
+  document.getElementById('pbanner').classList.remove('on');
+  ['new-icao','new-nome','new-price'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('coord-txt').textContent='–';
+}
+async function saveNewAero() {
+  const icao=document.getElementById('new-icao').value.trim().toUpperCase();
+  const nome=document.getElementById('new-nome').value.trim();
+  const price=parseFloat(document.getElementById('new-price').value);
+  if (!pendLL) return showAl('new','Posição não definida. Feche e clique no mapa.','e');
+  if (!icao||icao.length<2) return showAl('new','Indicativo ICAO inválido.','e');
+  if (!nome) return showAl('new','Informe o nome do aeródromo.','e');
+  if (aeros.find(a=>a.icao===icao)) return showAl('new',`Código ${icao} já existe.`,'e');
+  setLoading('btn-new',true);
+  try {
+    const novo = await dbInsert('aeros',{icao,nome,lat:pendLL.lat,lng:pendLL.lng,added_by:me.email});
+    aeros.push(novo);
+    await addLog('create_aero',`Criou aeródromo ${icao} — ${nome}`);
+    if (price&&price>0) {
+      const pr = await dbInsert('prices',{icao,price,user_email:me.email});
+      prices.unshift(pr);
+      await addLog('price',`Preço R$ ${price.toFixed(2)} em ${icao}`);
+    }
+    addMK(novo); updateStats(); populateSB();
+    closeM('new'); cancelPick();
+    map.flyTo([novo.lat,novo.lng],10,{duration:1});
+    setTimeout(()=>showPopup(novo),1100);
+  } catch(e) { showAl('new','Erro ao salvar: '+e.message,'e'); }
+  setLoading('btn-new',false);
+}
+
+// ── AUTH ──
+async function registerUser() {
+  const nome=document.getElementById('rg-nome').value.trim();
+  const cpf=document.getElementById('rg-cpf').value.trim();
+  const email=document.getElementById('rg-email').value.trim();
+  if (!regType) return showAl('reg','Selecione o tipo de usuário.','e');
+  if (!nome) return showAl('reg','Informe seu nome.','e');
+  if (!cpf||cpf.replace(/\D/g,'').length!==11) return showAl('reg','CPF inválido.','e');
+  if (!email||!email.includes('@')) return showAl('reg','E-mail inválido.','e');
+  setLoading('btn-register',true);
+  try {
+    const {data:existing} = await sb.from('users').select('id').or(`email.eq.${email},cpf.eq.${cpf}`);
+    if (existing&&existing.length>0) { showAl('reg','E-mail ou CPF já cadastrado.','e'); setLoading('btn-register',false); return; }
+    const u = await dbInsert('users',{nome,cpf,email,type:regType});
+    showAl('reg','Conta criada! Entrando…','s');
+    setTimeout(()=>{ doLogin({...u}); closeM('register'); },1000);
+  } catch(e) { showAl('reg','Erro: '+e.message,'e'); }
+  setLoading('btn-register',false);
+}
+
+async function loginUser() {
+  const email=document.getElementById('lg-email').value.trim();
+  const cpf=document.getElementById('lg-cpf').value.trim();
+  setLoading('btn-login',true);
+  const {data,error} = await sb.from('users').select('*').eq('email',email).eq('cpf',cpf).single();
+  if (error||!data) { showAl('login','E-mail ou CPF incorretos.','e'); setLoading('btn-login',false); return; }
+  doLogin(data); closeM('login');
+  setLoading('btn-login',false);
+}
+
+function doLogin(u) { me=u; localStorage.setItem('avgas_me',JSON.stringify(u)); refreshUI(); }
+function logout() { me=null; localStorage.removeItem('avgas_me'); refreshUI(); }
+
+function refreshUI() {
+  const tbr=document.getElementById('tbr'),sb=document.getElementById('sb'),fabs=document.getElementById('fabs');
+  if (me) {
+    const ini=me.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    tbr.innerHTML=`<span style="font-size:12px;color:var(--muted)">Olá, <b style="color:var(--text)">${me.nome.split(' ')[0]}</b></span>`;
+    document.getElementById('ua').textContent=ini;
+    document.getElementById('un').textContent=me.nome;
+    document.getElementById('ut').textContent=tLabel(me.type);
+    fabs.classList.add('on'); sb.classList.add('on'); sbOpen=true;
+    populateSB();
+  } else {
+    tbr.innerHTML=`<button class="btn" onclick="openM('login')">Entrar</button><button class="btn btn-a" onclick="openM('register')">Cadastrar</button>`;
+    fabs.classList.remove('on'); sb.classList.remove('on'); sbOpen=false;
+  }
+}
+
+// ── PRICES ──
+async function submitPrice() {
+  const icao=document.getElementById('rep-icao').value;
+  const price=parseFloat(document.getElementById('rep-price').value);
+  if (!icao) return fb('Selecione um aeródromo.','e');
+  if (!price||price<=0) return fb('Preço inválido.','e');
+  try {
+    const pr = await dbInsert('prices',{icao,price,user_email:me.email});
+    prices.unshift(pr);
+    await addLog('price',`Preço R$ ${price.toFixed(2)} em ${icao}`);
+    document.getElementById('rep-price').value='';
+    fb(`R$ ${price.toFixed(2)} registrado em ${icao}!`,'s');
+    addMK(aeros.find(a=>a.icao===icao));
+    updateStats(); populateSB();
+  } catch(e) { fb('Erro: '+e.message,'e'); }
+}
+function fb(msg,t) { const el=document.getElementById('rep-fb'); el.style.display='block'; el.className=`al al-${t==='s'?'s':'e'}`; el.textContent=msg; setTimeout(()=>el.style.display='none',3200); }
+
+// ── SIDEBAR ──
+function populateSB() {
+  const sel=document.getElementById('rep-icao');
+  sel.innerHTML='<option value="">Selecione o aeródromo…</option>'+[...aeros].sort((a,b)=>a.icao.localeCompare(b.icao)).map(a=>`<option value="${a.icao}">${a.icao} — ${a.nome}</option>`).join('');
+  const rl=document.getElementById('rep-list'), last=prices.slice(0,20);
+  rl.innerHTML=last.length?last.map(p=>`<div class="ur"><div class="ul2"><div class="uic">${p.icao}</div><div class="uwh">${p.user_email?.split('@')[0]||'?'}</div></div><div style="text-align:right"><div class="up2">R$ ${parseFloat(p.price).toFixed(2)}</div><div class="ud">${fmtD(p.created_at)}</div></div></div>`).join(''):`<div class="empty">Nenhuma atualização</div>`;
+  populateAeroList('');
+}
+
+function filterAeros(q) { populateAeroList(q.toLowerCase()); }
+function populateAeroList(q) {
+  const el=document.getElementById('aero-list');
+  const list=aeros.filter(a=>!q||a.icao.toLowerCase().includes(q)||a.nome.toLowerCase().includes(q)).sort((a,b)=>a.icao.localeCompare(b.icao));
+  el.innerHTML=list.length?list.map(a=>{ const l=getLatest(a.icao),isU=!DEFSET.has(a.icao); return`<div class="ar" onclick="flyTo('${a.icao}')"><span class="aic">${a.icao}</span><span class="an">${a.nome}</span>${isU?`<span class="nb">Novo</span>`:''} ${l?`<span class="ap2">R$ ${parseFloat(l.price).toFixed(2)}</span>`:`<span class="and">—</span>`}</div>`; }).join(''):`<div class="empty">Nenhum resultado</div>`;
+}
+
+function showHist(a) {
+  const el=document.getElementById('hist-list'), h=getLast6(a.icao);
+  el.innerHTML=h.length
+    ?`<div style="padding:10px 16px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">${a.icao} — ${a.nome}</div>`+h.map(p=>`<div class="ur"><div class="ul2"><div class="uic" style="color:var(--muted);font-size:11px;font-weight:400">${fmtD(p.created_at)}</div><div class="uwh">${p.user_email?.split('@')[0]||'?'}</div></div><div class="up2">R$ ${parseFloat(p.price).toFixed(2)}</div></div>`).join('')
+    :`<div class="empty">${a.icao} — sem histórico</div>`;
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  document.querySelector('[data-t="hist"]').classList.add('on');
+  document.querySelectorAll('.tc2').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-hist').classList.add('on');
+}
+
+async function populateLog() {
+  const el=document.getElementById('log-list');
+  el.innerHTML=`<div class="empty"><span class="spinner"></span>Carregando…</div>`;
+  const logs = await dbSelect('audit_log','order');
+  if (!logs.length) { el.innerHTML=`<div class="empty">Nenhuma ação registrada</div>`; return; }
+  el.innerHTML=`<div style="overflow-x:auto"><table class="lt"><thead><tr><th>Data</th><th>Usuário</th><th>Tipo</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody>`+logs.map(l=>`<tr><td style="white-space:nowrap">${fmtD(l.created_at)}</td><td>${l.user_name?.split(' ')[0]||l.user_email}</td><td>${tLabel(l.user_type)}</td><td><span class="la ${l.action==='price'?'la-p':'la-c'}">${l.action==='price'?'Preço':'Criação'}</span></td><td>${l.detail||''}</td></tr>`).join('')+`</tbody></table></div>`;
+}
+
+function flyTo(icao) {
+  const a=aeros.find(a=>a.icao===icao); if (!a) return;
+  map.flyTo([a.lat,a.lng],11,{duration:1});
+  setTimeout(()=>showPopup(a),1100);
+}
+
+function updateStats() {
+  const w=aeros.filter(a=>getLatest(a.icao)).length;
+  document.getElementById('st-total').textContent=`${aeros.length} aeródromos`;
+  document.getElementById('st-price').textContent=`${w} com preço`;
+}
+
+// ── UI HELPERS ──
+function swTab(btn) {
+  const t=btn.dataset.t;
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on');
+  document.querySelectorAll('.tc2').forEach(x=>x.classList.remove('on'));
+  document.getElementById('tab-'+t).classList.add('on');
+  if (t==='log') populateLog();
+}
+function toggleSB() { sbOpen=!sbOpen; document.getElementById('sb').classList.toggle('on',sbOpen); document.getElementById('fab-main').textContent=sbOpen?'✕':'☰'; }
+function openM(id) { document.getElementById('mo-'+id).classList.add('on'); }
+function closeM(id) { document.getElementById('mo-'+id).classList.remove('on'); }
+document.querySelectorAll('.mo').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('on'); }));
+function pickType(el) { document.querySelectorAll('.tc').forEach(c=>c.classList.remove('sel')); el.classList.add('sel'); regType=el.dataset.type; }
+function showAl(id,msg,t) { const el=document.getElementById('al-'+id); el.style.display='block'; el.className=`al al-${t==='s'?'s':t==='i'?'i':'e'}`; el.textContent=msg; }
+function setLoading(id,on) { const el=document.getElementById(id); if(on) { el.disabled=true; el.innerHTML=`<span class="spinner"></span>Aguarde…`; } else { el.disabled=false; el.innerHTML=el.id==='btn-register'?'Criar conta':el.id==='btn-login'?'Entrar':'Salvar aeródromo'; } }
+function mCPF(el) { let v=el.value.replace(/\D/g,'').slice(0,11); if(v.length>9) v=v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4'); else if(v.length>6) v=v.replace(/^(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3'); else if(v.length>3) v=v.replace(/^(\d{3})(\d{0,3})/,'$1.$2'); el.value=v; }
+function fmtD(ts) { const d=new Date(ts); return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function fmtS(ts) { const d=new Date(ts); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function tLabel(t) { return t==='fornecedor'?'Fornecedor':t==='piloto'?'Piloto':t==='interessado'?'Interessado':t||'–'; }
+
+// ── INIT ──
+initMap();
+if (me) refreshUI();
+</script>
+</body>
+</html>
