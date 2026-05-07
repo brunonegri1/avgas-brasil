@@ -9,171 +9,173 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--sky:#0a1628;--sky-mid:#102040;--sky-light:#1a3055;--accent:#f4a620;--adim:rgba(244,166,32,.15);--green:#2ec97e;--red:#e84040;--blue:#4db8ff;--text:#e8eaf2;--muted:#8a9ab5;--border:rgba(255,255,255,.08);--card:rgba(10,22,40,.97);--ibg:rgba(255,255,255,.06);--r:12px;--rs:8px;--sw:340px}
+:root{--sky:#0a1628;--mid:#102040;--light:#1a3055;--acc:#f4a620;--adim:rgba(244,166,32,.15);--grn:#2ec97e;--red:#e84040;--blu:#4db8ff;--txt:#e8eaf2;--mut:#8a9ab5;--bdr:rgba(255,255,255,.08);--card:rgba(10,22,40,.97);--ibg:rgba(255,255,255,.06);--r:12px;--rs:8px;--sw:350px}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--text);height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--txt);height:100dvh;overflow:hidden;display:flex;flex-direction:column}
 /* TOPBAR */
-.topbar{height:52px;background:var(--sky-mid);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:1000;flex-shrink:0;gap:8px}
+.topbar{height:52px;background:var(--mid);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:1000;flex-shrink:0;gap:8px}
 .logo{display:flex;align-items:center;gap:8px;font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:-.5px;flex-shrink:0}
-.logo-icon{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
-.logo span{color:var(--accent)}
+.logo-icon{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.logo span{color:var(--acc)}
 .tbr{display:flex;align-items:center;gap:8px;flex-shrink:0}
 /* BUTTONS */
-.btn{padding:7px 13px;border-radius:var(--rs);border:1px solid var(--border);background:var(--ibg);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;white-space:nowrap;touch-action:manipulation;display:inline-flex;align-items:center;gap:6px}
-.btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+.btn{padding:7px 13px;border-radius:var(--rs);border:1px solid var(--bdr);background:var(--ibg);color:var(--txt);font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;white-space:nowrap;touch-action:manipulation;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{background:rgba(255,255,255,.1)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-a{background:var(--accent);border-color:var(--accent);color:#0a1628;font-weight:700}
+.btn-a{background:var(--acc);border-color:var(--acc);color:#0a1628;font-weight:700}
 .btn-a:hover{background:#fdb93c}
 .btn-sm{padding:6px 11px;font-size:12px}
 .btn-block{width:100%;justify-content:center;margin-top:13px}
-.btn-green{background:rgba(46,201,126,.15);border-color:rgba(46,201,126,.4);color:var(--green)}
+.btn-grn{background:rgba(46,201,126,.12);border-color:rgba(46,201,126,.35);color:var(--grn)}
 /* MAP */
-#map{flex:1;z-index:1;transition:cursor .1s}
-#map.pick-mode{cursor:crosshair!important}
-#map.pick-mode .leaflet-interactive{cursor:crosshair!important}
+#map{flex:1;z-index:1}
+#map.pick{cursor:crosshair!important}
+#map.pick .leaflet-interactive{cursor:crosshair!important}
 .leaflet-container{background:#0d1f38}
-.leaflet-control-zoom a{background:var(--sky-mid)!important;color:var(--text)!important;border-color:var(--border)!important;width:30px!important;height:30px!important;line-height:30px!important}
-.leaflet-control-zoom a:hover{background:var(--sky-light)!important}
+.leaflet-control-zoom a{background:var(--mid)!important;color:var(--txt)!important;border-color:var(--bdr)!important;width:30px!important;height:30px!important;line-height:30px!important}
+.leaflet-control-zoom a:hover{background:var(--light)!important}
 .leaflet-control-attribution{display:none}
 .leaflet-control-zoom{margin-bottom:60px!important}
 /* PICK BANNER */
-.pick-banner{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0a1628;padding:9px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:2000;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none}
-.pick-banner.on{display:flex;align-items:center;gap:10px}
-.pick-cancel{pointer-events:all;cursor:pointer;text-decoration:underline;font-weight:400}
+.pbanner{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--acc);color:#0a1628;padding:9px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:2000;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.pbanner.on{display:flex;align-items:center;gap:12px}
+.pbanner .cancel{cursor:pointer;text-decoration:underline;font-weight:400}
 /* TEMP MARKER */
-.tmp-pin{background:var(--accent);width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.tmppin{width:14px;height:14px;border-radius:50%;background:var(--acc);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)}
 /* MARKERS */
-.mk-outer{display:flex;flex-direction:column;align-items:center;cursor:pointer;width:74px}
-.mk-box{background:#102040;border:2px solid #f4a620;border-radius:7px;padding:4px 7px 3px;width:100%;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 10px rgba(244,166,32,.2)}
-.mk-icao{display:block;font-size:11px;font-weight:700;color:#f4a620;letter-spacing:.04em;line-height:1.3;font-family:'Space Grotesk',sans-serif}
-.mk-price{display:block;font-size:10px;font-weight:600;color:#8ecff7;line-height:1.3;font-family:'Space Grotesk',sans-serif}
-.mk-date{display:block;font-size:9px;color:#8a9ab5;line-height:1.3;font-family:'Space Grotesk',sans-serif}
+.mk-o{display:flex;flex-direction:column;align-items:center;cursor:pointer;width:74px}
+.mk-b{background:#102040;border:2px solid #f4a620;border-radius:7px;padding:4px 7px 3px;width:100%;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 8px rgba(244,166,32,.2)}
+.mk-i{display:block;font-size:11px;font-weight:700;color:#f4a620;letter-spacing:.04em;line-height:1.3;font-family:'Space Grotesk',sans-serif}
+.mk-f{display:block;font-size:9px;color:#8a9ab5;line-height:1.2;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.03em}
+.mk-p{display:block;font-size:10px;font-weight:600;color:#8ecff7;line-height:1.3;font-family:'Space Grotesk',sans-serif}
+.mk-d{display:block;font-size:9px;color:#8a9ab5;line-height:1.3;font-family:'Space Grotesk',sans-serif}
 .mk-pin{width:2px;height:7px;background:#f4a620;margin:0 auto}
 .mk-dot{width:6px;height:6px;border-radius:50%;background:#f4a620;border:1px solid #0a1628}
 /* POPUP */
 .leaflet-popup-content-wrapper{background:#102040!important;border:1px solid rgba(255,255,255,.1)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.6)!important;color:#e8eaf2!important;padding:0!important}
-.leaflet-popup-content{margin:0!important;width:270px!important}
+.leaflet-popup-content{margin:0!important;width:290px!important}
 .leaflet-popup-tip{background:#102040!important}
 .leaflet-popup-close-button{color:#8a9ab5!important;font-size:18px!important;top:10px!important;right:10px!important}
 .pi{padding:14px 16px 16px}
 .pi-icao{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#f4a620}
-.pi-name{font-size:11px;color:#8a9ab5;margin:2px 0 10px}
+.pi-name{font-size:11px;color:#8a9ab5;margin:1px 0 10px}
+.pi-fuel-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.pi-ftab{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--bdr);background:var(--ibg);color:var(--mut);transition:all .15s}
+.pi-ftab.on{background:var(--adim);border-color:var(--acc);color:var(--acc)}
 .pi-pbox{background:rgba(244,166,32,.1);border:1px solid rgba(244,166,32,.3);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
 .pi-pval{font-size:22px;font-weight:700;color:#f4a620}
 .pi-empty{text-align:center;padding:10px 0;color:#8a9ab5;font-size:12px;font-style:italic}
 .pi-htitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8a9ab5;margin-bottom:6px}
 .pi-hrow{display:flex;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:11px}
 .pi-hrow:last-child{border-bottom:none}
-.pi-hdate{color:#8a9ab5;flex-shrink:0;min-width:72px}
+.pi-hdate{color:#8a9ab5;flex-shrink:0;min-width:68px}
 .pi-hwho{color:#8a9ab5;flex:1;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pi-hprice{font-weight:600;flex-shrink:0}
 /* MODAL */
 .mo{display:none;position:fixed;inset:0;background:rgba(5,12,28,.88);z-index:3000;align-items:center;justify-content:center;padding:16px}
 .mo.on{display:flex}
-.md{background:var(--sky-mid);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:430px;max-height:92dvh;overflow-y:auto;animation:su .22s ease}
+.md{background:var(--mid);border:1px solid var(--bdr);border-radius:var(--r);width:100%;max-width:440px;max-height:92dvh;overflow-y:auto;animation:su .22s ease}
 @keyframes su{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-.mh{padding:15px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--sky-mid);z-index:2}
+.mh{padding:15px 20px 12px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--mid);z-index:2}
 .mt{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
-.mc{width:28px;height:28px;border-radius:6px;background:var(--ibg);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
-.mc:hover{color:var(--text)}
+.mc{width:28px;height:28px;border-radius:6px;background:var(--ibg);border:1px solid var(--bdr);color:var(--mut);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
 .mb{padding:16px 20px 22px}
 /* FORM */
 .fg{margin-bottom:13px}
-.fl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px}
-.fc{width:100%;padding:10px 13px;background:var(--ibg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;transition:border-color .18s}
-.fc:focus{border-color:var(--accent)}
-.fc.err{border-color:var(--red)}
+.fl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px}
+.fc{width:100%;padding:10px 13px;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--rs);color:var(--txt);font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;transition:border-color .18s}
+.fc:focus{border-color:var(--acc)}
 .fc option{background:#1a3055}
 .fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.tc{padding:11px 6px;background:var(--ibg);border:1px solid var(--border);border-radius:var(--rs);text-align:center;cursor:pointer;transition:all .18s;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);touch-action:manipulation}
+.tc{padding:11px 6px;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--rs);text-align:center;cursor:pointer;transition:all .18s;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
 .tc .ti{font-size:18px;display:block;margin-bottom:5px}
-.tc:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
-.tc.sel{border-color:var(--accent);background:var(--adim);color:var(--accent)}
+.tc.sel{border-color:var(--acc);background:var(--adim);color:var(--acc)}
 .al{padding:9px 13px;border-radius:var(--rs);font-size:13px;margin-bottom:13px}
-.al-s{background:rgba(46,201,126,.1);border:1px solid rgba(46,201,126,.3);color:var(--green)}
+.al-s{background:rgba(46,201,126,.1);border:1px solid rgba(46,201,126,.3);color:var(--grn)}
 .al-e{background:rgba(232,64,64,.1);border:1px solid rgba(232,64,64,.3);color:var(--red)}
-.al-i{background:rgba(77,184,255,.1);border:1px solid rgba(77,184,255,.3);color:var(--blue)}
-.al-w{background:rgba(244,166,32,.1);border:1px solid rgba(244,166,32,.3);color:var(--accent)}
+.al-i{background:rgba(77,184,255,.1);border:1px solid rgba(77,184,255,.3);color:var(--blu)}
+.al-w{background:rgba(244,166,32,.1);border:1px solid rgba(244,166,32,.3);color:var(--acc)}
 .pw{position:relative}
-.pp{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;font-weight:600;pointer-events:none}
+.pp{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:13px;font-weight:600;pointer-events:none}
 .pf{padding-left:30px!important}
 /* COORD BOX */
-.coord-box{background:var(--sky-light);border:1px solid var(--border);border-radius:var(--rs);padding:10px 13px;display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;font-size:13px}
-.coord-val{font-weight:600;color:var(--accent);font-family:monospace;font-size:12px}
-.coord-hint{font-size:11px;color:var(--muted)}
+.cbox{background:var(--light);border:1px solid var(--bdr);border-radius:var(--rs);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.cval{font-weight:600;color:var(--acc);font-family:monospace;font-size:11px}
 /* SIDEBAR */
-.sb{position:fixed;right:0;top:52px;bottom:0;width:var(--sw);background:var(--card);border-left:1px solid var(--border);z-index:900;display:none;flex-direction:column;overflow:hidden}
+.sb{position:fixed;right:0;top:52px;bottom:0;width:var(--sw);background:var(--card);border-left:1px solid var(--bdr);z-index:900;display:none;flex-direction:column;overflow:hidden}
 .sb.on{display:flex}
-.sbh{padding:13px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sbh{padding:13px 16px;border-bottom:1px solid var(--bdr);flex-shrink:0}
 .ub{display:flex;align-items:center;gap:10px}
-.ua{width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--sky);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.ua{width:38px;height:38px;border-radius:50%;background:var(--acc);color:var(--sky);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
 .un{font-weight:600;font-size:14px}
-.ut{font-size:10px;color:var(--muted);background:var(--ibg);border:1px solid var(--border);border-radius:20px;padding:2px 9px;display:inline-block;margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
-.tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.tb{flex:1;padding:9px 4px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .18s;margin-bottom:-1px;touch-action:manipulation}
-.tb:hover{color:var(--text)}
-.tb.on{color:var(--accent);border-bottom-color:var(--accent)}
+.ut{font-size:10px;color:var(--mut);background:var(--ibg);border:1px solid var(--bdr);border-radius:20px;padding:2px 9px;display:inline-block;margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
+.tabs{display:flex;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.tb{flex:1;padding:9px 4px;background:none;border:none;border-bottom:2px solid transparent;color:var(--mut);font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .18s;margin-bottom:-1px}
+.tb.on{color:var(--acc);border-bottom-color:var(--acc)}
 .tc2{display:none;flex:1;flex-direction:column;overflow:hidden}
 .tc2.on{display:flex}
-.sh{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
-.sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:9px}
-.pr{display:flex;gap:7px;align-items:flex-end}
+.sh{padding:12px 16px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);margin-bottom:9px}
 .sbl{flex:1;overflow-y:auto}
 .sbl::-webkit-scrollbar{width:3px}
-.sbl::-webkit-scrollbar-thumb{background:var(--sky-light);border-radius:2px}
-.ur{padding:9px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sbl::-webkit-scrollbar-thumb{background:var(--light);border-radius:2px}
+.ur{padding:9px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;gap:8px}
 .ul2{flex:1;min-width:0}
-.uic{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.05em}
-.uwh{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uic{font-size:12px;font-weight:700;color:var(--acc);letter-spacing:.05em}
+.uwh{font-size:10px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .up2{font-size:14px;font-weight:700;white-space:nowrap}
-.ud{font-size:10px;color:var(--muted);text-align:right}
-.sw2{padding:10px 16px;border-bottom:1px solid var(--border);position:relative;flex-shrink:0}
+.ud{font-size:10px;color:var(--mut);text-align:right}
+.uf{font-size:9px;color:var(--mut);text-align:right;text-transform:uppercase}
+.sw2{padding:10px 16px;border-bottom:1px solid var(--bdr);position:relative;flex-shrink:0}
 .si{font-size:13px;position:absolute;left:28px;top:50%;transform:translateY(-50%);pointer-events:none}
-.sin{width:100%;padding:8px 10px 8px 30px;background:var(--ibg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none}
-.sin:focus{border-color:var(--accent)}
-.ar{padding:9px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .14s;gap:6px;touch-action:manipulation}
-.ar:hover,.ar:active{background:rgba(255,255,255,.03)}
-.aic{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--accent);flex-shrink:0;min-width:52px}
-.an{font-size:11px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sin{width:100%;padding:8px 10px 8px 30px;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--rs);color:var(--txt);font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none}
+.sin:focus{border-color:var(--acc)}
+.ar{padding:9px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .14s;gap:6px}
+.ar:hover{background:rgba(255,255,255,.03)}
+.aic{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--acc);flex-shrink:0;min-width:52px}
+.an{font-size:11px;color:var(--mut);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ap2{font-size:12px;font-weight:600;flex-shrink:0}
-.and{font-size:11px;color:var(--muted);font-style:italic;flex-shrink:0}
-.nb{font-size:9px;padding:2px 6px;border-radius:20px;flex-shrink:0;text-transform:uppercase;letter-spacing:.05em;font-weight:700;background:rgba(77,184,255,.15);color:var(--blue);border:1px solid rgba(77,184,255,.3)}
+.and{font-size:11px;color:var(--mut);font-style:italic;flex-shrink:0}
+.nb{font-size:9px;padding:2px 6px;border-radius:20px;flex-shrink:0;text-transform:uppercase;letter-spacing:.05em;font-weight:700;background:rgba(77,184,255,.15);color:var(--blu);border:1px solid rgba(77,184,255,.3)}
 /* LOG */
 .lt{width:100%;font-size:11px;border-collapse:collapse}
-.lt th{padding:8px 10px;background:var(--sky-light);color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;text-align:left;position:sticky;top:0}
-.lt td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
-.lt tr:last-child td{border-bottom:none}
+.lt th{padding:8px 10px;background:var(--light);color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.06em;text-align:left;position:sticky;top:0}
+.lt td{padding:7px 10px;border-bottom:1px solid var(--bdr);vertical-align:top}
 .la{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:700}
-.la-p{background:rgba(244,166,32,.15);color:var(--accent)}
-.la-c{background:rgba(46,201,126,.15);color:var(--green)}
+.la-p{background:rgba(244,166,32,.15);color:var(--acc)}
+.la-c{background:rgba(46,201,126,.15);color:var(--grn)}
 /* STATS */
 .stats{position:fixed;bottom:16px;left:16px;display:flex;gap:8px;z-index:500;pointer-events:none}
-.sp{background:rgba(10,22,40,.92);border:1px solid var(--border);border-radius:30px;padding:6px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px;backdrop-filter:blur(6px)}
-.sd{width:7px;height:7px;border-radius:50%;background:var(--accent)}
-.sd.g{background:var(--green)}
+.sp{background:rgba(10,22,40,.92);border:1px solid var(--bdr);border-radius:30px;padding:6px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px;backdrop-filter:blur(6px)}
+.sd{width:7px;height:7px;border-radius:50%;background:var(--acc)}
+.sd.g{background:var(--grn)}
 /* FABS */
 .fabs{position:fixed;right:16px;bottom:16px;display:none;flex-direction:column;align-items:flex-end;gap:10px;z-index:800}
 .fabs.on{display:flex}
-.fab{width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 3px 12px rgba(0,0,0,.4);touch-action:manipulation}
-.fab-m{background:var(--accent);color:var(--sky);font-size:20px}
-.fab-m:hover,.fab-m:active{transform:scale(1.06);box-shadow:0 4px 16px rgba(244,166,32,.45)}
-.fab-s{background:var(--sky-mid);color:var(--text);border:1px solid var(--border)}
-.fab-s:hover,.fab-s:active{background:var(--sky-light)}
-.fab-s.active-pick{background:var(--accent);color:#0a1628;border-color:var(--accent)}
-.flbl{background:rgba(10,22,40,.92);border:1px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px;white-space:nowrap}
+.fab{width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 3px 12px rgba(0,0,0,.4)}
+.fab-m{background:var(--acc);color:var(--sky);font-size:20px}
+.fab-m:hover{transform:scale(1.06);box-shadow:0 4px 16px rgba(244,166,32,.45)}
+.fab-s{background:var(--mid);color:var(--txt);border:1px solid var(--bdr)}
+.fab-s:hover{background:var(--light)}
+.fab-s.picking{background:var(--acc);color:#0a1628;border-color:var(--acc)}
+.flbl{background:rgba(10,22,40,.92);border:1px solid var(--bdr);color:var(--txt);font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px;white-space:nowrap}
 .frow{display:flex;align-items:center;gap:8px}
 /* SPINNER */
 .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle}
 @keyframes sp{to{transform:rotate(360deg)}}
-/* RESPONSIVE */
+/* FUEL COLOR DOTS */
+.fdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.f-avgas{background:#f4a620}
+.f-jeta{background:#4db8ff}
+.f-jetai{background:#a78bfa}
+.f-brjet{background:#2ec97e}
+.f-brjeti{background:#fb923c}
 @media(max-width:600px){:root{--sw:100vw}.stats{display:none}.fabs{bottom:12px;right:12px}.md{max-width:100%}.leaflet-control-zoom{display:none!important}.fr2{grid-template-columns:1fr}.logo span{display:none}}
-.empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:13px}
+.empty{text-align:center;padding:28px 16px;color:var(--mut);font-size:13px}
 </style>
 </head>
 <body>
-
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="logo"><div class="logo-icon">⛽</div>AVGAS <span>Brasil</span></div>
   <div class="tbr" id="tbr">
@@ -181,25 +183,14 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--te
     <button class="btn btn-a" onclick="openM('register')">Cadastrar</button>
   </div>
 </div>
-
-<!-- MAP -->
 <div id="map"></div>
-
-<!-- PICK BANNER -->
-<div class="pick-banner" id="pick-banner">
-  📍 Clique no mapa para posicionar o aeródromo
-  <span class="pick-cancel" onclick="cancelPick()">✕ Cancelar</span>
-</div>
-
-<!-- STATS -->
+<div class="pbanner" id="pbanner">📍 Clique no mapa para posicionar o aeródromo <span class="cancel" onclick="cancelPick()">✕ Cancelar</span></div>
 <div class="stats">
-  <div class="sp"><div class="sd"></div><span id="st-total">—</span></div>
-  <div class="sp"><div class="sd g"></div><span id="st-price">—</span></div>
+  <div class="sp"><div class="sd"></div><span id="st-t">—</span></div>
+  <div class="sp"><div class="sd g"></div><span id="st-p">—</span></div>
 </div>
-
-<!-- FABS -->
 <div class="fabs" id="fabs">
-  <div class="frow"><span class="flbl" id="fab-lbl-pick">Novo aeródromo no mapa</span><button class="fab fab-s" id="fab-pick" onclick="togglePick()" title="Adicionar aeródromo">📍</button></div>
+  <div class="frow"><span class="flbl" id="fab-lbl">Novo aeródromo no mapa</span><button class="fab fab-s" id="fab-pick" onclick="togglePick()">📍</button></div>
   <div class="frow"><span class="flbl">Painel</span><button class="fab fab-m" id="fab-main" onclick="toggleSB()">☰</button></div>
 </div>
 
@@ -218,47 +209,47 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--te
     <button class="tb" data-t="hist" onclick="swTab(this)">Hist.</button>
     <button class="tb" data-t="log" onclick="swTab(this)">Log</button>
   </div>
-
-  <!-- TAB REPORTAR PREÇO -->
   <div class="tc2 on" id="tab-rep">
     <div class="sh">
-      <div class="sl">Reportar preço de AVGAS</div>
+      <div class="sl">Reportar preço</div>
       <div class="fg" style="margin-bottom:9px"><select class="fc" id="rep-icao"><option value="">Carregando…</option></select></div>
-      <div class="pr">
+      <div class="fg" style="margin-bottom:9px">
+        <select class="fc" id="rep-fuel">
+          <option value="AVGAS">⛽ AVGAS</option>
+          <option value="JET-A">✈️ JET-A</option>
+          <option value="JET-A INTER">🌍 JET-A INTER</option>
+          <option value="BR JET PLUS">🇧🇷 BR JET PLUS</option>
+          <option value="BR JET PLUS INTER">🌐 BR JET PLUS INTER</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:7px;align-items:flex-end">
         <div class="pw" style="flex:1"><span class="pp">R$</span><input type="number" class="fc pf" id="rep-price" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
-        <button class="btn btn-a btn-sm" id="btn-enviar" onclick="submitPrice()">Enviar</button>
+        <button class="btn btn-a btn-sm" id="btn-env" onclick="submitPrice()">Enviar</button>
       </div>
       <div id="rep-fb" style="margin-top:9px;display:none"></div>
     </div>
     <div style="padding:10px 16px 6px;flex-shrink:0"><div class="sl">Últimas atualizações</div></div>
     <div class="sbl" id="rep-list"><div class="empty">Carregando…</div></div>
   </div>
-
-  <!-- TAB AERÓDROMOS -->
   <div class="tc2" id="tab-aeros">
     <div class="sw2"><span class="si">🔍</span><input class="sin" placeholder="Buscar ICAO ou nome…" oninput="filterAeros(this.value)"></div>
     <div class="sbl" id="aero-list"><div class="empty">Carregando…</div></div>
   </div>
-
-  <!-- TAB HISTÓRICO -->
   <div class="tc2" id="tab-hist">
     <div class="sbl" id="hist-list"><div class="empty">Clique em um aeródromo no mapa</div></div>
   </div>
-
-  <!-- TAB LOG -->
   <div class="tc2" id="tab-log">
-    <div class="sbl" id="log-list"><div class="empty">Carregando…</div></div>
+    <div class="sbl" id="log-list"><div class="empty">—</div></div>
   </div>
 </div>
 
-<!-- ═══ MODAL REGISTER ═══ -->
+<!-- MODAL REGISTER -->
 <div class="mo" id="mo-register">
   <div class="md">
     <div class="mh"><div class="mt">Criar conta</div><button class="mc" onclick="closeM('register')">✕</button></div>
     <div class="mb">
       <div id="al-reg" class="al" style="display:none"></div>
-      <div class="fg">
-        <label class="fl">Tipo de usuário</label>
+      <div class="fg"><label class="fl">Tipo de usuário</label>
         <div class="tg">
           <div class="tc" data-type="fornecedor" onclick="pickType(this)"><span class="ti">🏢</span>Fornecedor</div>
           <div class="tc" data-type="piloto" onclick="pickType(this)"><span class="ti">✈️</span>Piloto</div>
@@ -275,574 +266,383 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--te
   </div>
 </div>
 
-<!-- ═══ MODAL LOGIN ═══ -->
+<!-- MODAL LOGIN -->
 <div class="mo" id="mo-login">
   <div class="md">
     <div class="mh"><div class="mt">Entrar</div><button class="mc" onclick="closeM('login')">✕</button></div>
     <div class="mb">
       <div id="al-login" class="al" style="display:none"></div>
       <div class="fg"><label class="fl">E-mail</label><input type="email" class="fc" id="lg-email" placeholder="seu@email.com"></div>
-      <div class="fg"><label class="fl">CPF (usado como senha)</label><input class="fc" id="lg-cpf" placeholder="000.000.000-00" maxlength="14" oninput="mCPF(this)" inputmode="numeric"></div>
+      <div class="fg"><label class="fl">CPF (senha)</label><input class="fc" id="lg-cpf" placeholder="000.000.000-00" maxlength="14" oninput="mCPF(this)" inputmode="numeric"></div>
       <button class="btn btn-a btn-block" id="btn-login" onclick="loginUser()">Entrar</button>
-      <p style="text-align:center;margin-top:12px;font-size:13px;color:var(--muted)">Sem conta? <a href="#" onclick="openM('register');closeM('login');return false" style="color:var(--accent);text-decoration:none">Cadastre-se</a></p>
+      <p style="text-align:center;margin-top:12px;font-size:13px;color:var(--mut)">Sem conta? <a href="#" onclick="openM('register');closeM('login');return false" style="color:var(--acc);text-decoration:none">Cadastre-se</a></p>
     </div>
   </div>
 </div>
 
-<!-- ═══ MODAL NOVO AERÓDROMO ═══ -->
+<!-- MODAL NOVO AERÓDROMO -->
 <div class="mo" id="mo-new">
   <div class="md">
     <div class="mh"><div class="mt">Novo ponto de abastecimento</div><button class="mc" onclick="closeM('new');cancelPick()">✕</button></div>
     <div class="mb">
       <div id="al-new" class="al" style="display:none"></div>
-
-      <!-- Posição selecionada no mapa -->
-      <div class="coord-box" id="coord-box">
+      <div class="cbox">
         <div>
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:3px">Posição no mapa</div>
-          <div class="coord-val" id="coord-txt">Nenhuma posição selecionada</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:3px">Posição no mapa</div>
+          <div class="cval" id="coord-txt">Nenhuma selecionada</div>
         </div>
-        <button class="btn btn-sm btn-green" onclick="startPickFromModal()">📍 Escolher</button>
+        <button class="btn btn-sm btn-grn" onclick="startPickFromModal()">📍 Escolher</button>
       </div>
-
-      <!-- ICAO + Nome -->
       <div class="fr2">
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Indicativo ICAO</label>
-          <input class="fc" id="new-icao" placeholder="ex: SBXX" maxlength="4" oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase">
-        </div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Nome / Cidade</label>
-          <input class="fc" id="new-nome" placeholder="Nome do aeródromo">
-        </div>
+        <div class="fg" style="margin-bottom:0"><label class="fl">ICAO</label><input class="fc" id="new-icao" placeholder="ex: SBXX" maxlength="4" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="fg" style="margin-bottom:0"><label class="fl">Nome / Cidade</label><input class="fc" id="new-nome" placeholder="Nome do aeródromo"></div>
       </div>
-
-      <!-- Preço inicial -->
       <div class="fg" style="margin-top:13px">
-        <label class="fl">Preço inicial AVGAS (opcional)</label>
+        <label class="fl">Tipo de combustível (opcional)</label>
+        <select class="fc" id="new-fuel" style="margin-bottom:8px">
+          <option value="">Sem preço inicial</option>
+          <option value="AVGAS">AVGAS</option>
+          <option value="JET-A">JET-A</option>
+          <option value="JET-A INTER">JET-A INTER</option>
+          <option value="BR JET PLUS">BR JET PLUS</option>
+          <option value="BR JET PLUS INTER">BR JET PLUS INTER</option>
+        </select>
         <div class="pw"><span class="pp">R$</span><input type="number" class="fc pf" id="new-price" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
       </div>
-
       <button class="btn btn-a btn-block" id="btn-new" onclick="saveNewAero()">Salvar aeródromo</button>
     </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════
-// SUPABASE
-// ══════════════════════════════════════
-const SB_URL = 'https://piflbejipeelgkivwqeo.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpZmxiZWppcGVlbGdraXZ3cWVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjE1MDcsImV4cCI6MjA5MzczNzUwN30._TxM_EZdObmZLoAgMy-x20o3-AQXjdXHoyrIZvNIuIo';
-const db = supabase.createClient(SB_URL, SB_KEY);
+const SB_URL='https://piflbejipeelgkivwqeo.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpZmxiZWppcGVlbGdraXZ3cWVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjE1MDcsImV4cCI6MjA5MzczNzUwN30._TxM_EZdObmZLoAgMy-x20o3-AQXjdXHoyrIZvNIuIo';
+const db = supabase.createClient(SB_URL,SB_KEY);
 
-async function q(table, order = true) {
-  let r = db.from(table).select('*');
-  if (order) r = r.order('created_at', { ascending: false });
-  const { data, error } = await r;
-  if (error) { console.error(table, error); return []; }
-  return data || [];
+const FUELS=['AVGAS','JET-A','JET-A INTER','BR JET PLUS','BR JET PLUS INTER'];
+const FCLASS={AVGAS:'f-avgas','JET-A':'f-jeta','JET-A INTER':'f-jetai','BR JET PLUS':'f-brjet','BR JET PLUS INTER':'f-brjeti'};
+
+async function dbQ(t,order=true){
+  let q=db.from(t).select('*');
+  if(order) q=q.order('created_at',{ascending:false});
+  const {data,error}=await q;
+  if(error){console.error(t,error);return[];}
+  return data||[];
 }
-async function ins(table, row) {
-  const { data, error } = await db.from(table).insert([row]).select();
-  if (error) throw error;
+async function dbI(t,row){
+  const {data,error}=await db.from(t).insert([row]).select();
+  if(error) throw error;
   return data[0];
 }
-async function addLog(action, detail) {
-  if (!me) return;
-  try { await ins('audit_log', { user_email: me.email, user_name: me.nome, user_type: me.type, action, detail }); } catch(e) {}
+async function addLog(action,detail){
+  if(!me) return;
+  try{await dbI('audit_log',{user_email:me.email,user_name:me.nome,user_type:me.type,action,detail});}catch(e){}
 }
 
-// ══════════════════════════════════════
-// AERÓDROMOS DEFAULT
-// ══════════════════════════════════════
-const DEF = [
-  {icao:'SBGR',nome:'Guarulhos – Cumbica',lat:-23.4356,lng:-46.4731},
-  {icao:'SBSP',nome:'Congonhas',lat:-23.6261,lng:-46.6564},
-  {icao:'SBJD',nome:'Campo de Marte',lat:-23.5091,lng:-46.6383},
-  {icao:'SBKP',nome:'Campinas – Viracopos',lat:-23.0074,lng:-47.1345},
-  {icao:'SBBE',nome:'Belém – Val de Cans',lat:-1.3792,lng:-48.4763},
-  {icao:'SBBR',nome:'Brasília Internacional',lat:-15.8711,lng:-47.9186},
-  {icao:'SBGL',nome:'Galeão',lat:-22.8099,lng:-43.2505},
-  {icao:'SBSV',nome:'Salvador',lat:-12.9086,lng:-38.3225},
-  {icao:'SBRF',nome:'Recife – Guararapes',lat:-8.1265,lng:-34.9236},
-  {icao:'SBFZ',nome:'Fortaleza – Pinto Martins',lat:-3.7762,lng:-38.5326},
-  {icao:'SBPA',nome:'Porto Alegre',lat:-29.9944,lng:-51.1714},
-  {icao:'SBCT',nome:'Curitiba – Afonso Pena',lat:-25.5285,lng:-49.1758},
-  {icao:'SBFL',nome:'Florianópolis – Hercílio',lat:-27.6705,lng:-48.5525},
-  {icao:'SBMN',nome:'Manaus – Ponta Pelada',lat:-3.1460,lng:-59.9860},
-  {icao:'SBEG',nome:'Manaus – Eduardo Gomes',lat:-3.0386,lng:-60.0497},
-  {icao:'SBMO',nome:'Maceió',lat:-9.5108,lng:-35.7917},
-  {icao:'SBTE',nome:'Teresina',lat:-5.0599,lng:-42.8235},
-  {icao:'SBSL',nome:'São Luís',lat:-2.5854,lng:-44.2345},
-  {icao:'SBMG',nome:'Maringá',lat:-23.4762,lng:-52.0124},
-  {icao:'SBLO',nome:'Londrina',lat:-23.3336,lng:-51.1301},
-  {icao:'SBCG',nome:'Campo Grande',lat:-20.4687,lng:-54.6725},
-  {icao:'SBCY',nome:'Cuiabá',lat:-15.6529,lng:-56.1165},
-  {icao:'SBVT',nome:'Vitória – Eurico Salles',lat:-20.2579,lng:-40.2863},
-  {icao:'SBJP',nome:'João Pessoa',lat:-7.1459,lng:-34.9503},
-  {icao:'SBNT',nome:'Natal – Augusto Severo',lat:-5.9114,lng:-35.2477},
-  {icao:'SBMK',nome:'Montes Claros',lat:-16.7062,lng:-43.8189},
-  {icao:'SBUR',nome:'Uberaba',lat:-19.7648,lng:-47.9661},
-  {icao:'SBUL',nome:'Uberlândia',lat:-18.8836,lng:-48.2253},
-  {icao:'SBGO',nome:'Goiânia',lat:-16.6320,lng:-49.2207},
-  {icao:'SWLC',nome:'Lucas do Rio Verde',lat:-13.0364,lng:-55.9578},
-];
-const DEFSET = new Set(DEF.map(d => d.icao));
+let map,MK={},tmpMK=null;
+let aeros=[],prices=[];
+let me=JSON.parse(localStorage.getItem('avgas_me')||'null');
+let sbOpen=false,pickMode=false,pendLL=null,regType='';
 
-// ══════════════════════════════════════
-// STATE
-// ══════════════════════════════════════
-let map, MK = {}, tmpMK = null;
-let aeros = [], prices = [];
-let me = JSON.parse(localStorage.getItem('avgas_me') || 'null');
-let sbOpen = false, pickMode = false, pendLL = null, regType = '';
+// fuel filter per aerodrome popup
+let popupFuel='';
 
-// ══════════════════════════════════════
-// MAP INIT
-// ══════════════════════════════════════
-async function initMap() {
-  map = L.map('map', { zoomControl: true, attributionControl: false }).setView([-15.5, -48.5], 5);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
-
-  map.on('click', e => {
-    if (!pickMode) return;
-    setPickedLocation(e.latlng);
-  });
-
-  await seedAeros();
+async function initMap(){
+  map=L.map('map',{zoomControl:true,attributionControl:false}).setView([-15.5,-48.5],5);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+  map.on('click',e=>{if(!pickMode)return; setPickedLL(e.latlng);});
   await loadAll();
 }
 
-async function seedAeros() {
-  const { data: existing } = await db.from('aeros').select('icao');
-  const existSet = new Set((existing || []).map(a => a.icao));
-  const toInsert = DEF.filter(a => !existSet.has(a.icao));
-  for (const a of toInsert) {
-    await db.from('aeros').insert([{ icao: a.icao, nome: a.nome, lat: a.lat, lng: a.lng }]);
-  }
-}
-
-async function loadAll() {
-  [aeros, prices] = await Promise.all([q('aeros', false), q('prices')]);
-  aeros.forEach(a => addMK(a));
+async function loadAll(){
+  [aeros,prices]=await Promise.all([dbQ('aeros',false),dbQ('prices')]);
+  aeros.forEach(a=>addMK(a));
   updateStats();
-  if (me) populateSB();
+  if(me) populateSB();
 }
 
-// ══════════════════════════════════════
-// MARKERS
-// ══════════════════════════════════════
-function getLatest(icao) {
-  return prices.find(p => p.icao === icao) || null;
+function getLatestByFuel(icao,fuel){
+  return prices.find(p=>p.icao===icao&&p.fuel_type===fuel)||null;
 }
-function getLast6(icao) {
-  return prices.filter(p => p.icao === icao).slice(0, 6);
+function getLatestAny(icao){
+  // priority: AVGAS first, then JET-A, then whatever
+  for(const f of FUELS){const p=getLatestByFuel(icao,f);if(p)return{p,f};}
+  return null;
+}
+function getLast6(icao,fuel){
+  return prices.filter(p=>p.icao===icao&&p.fuel_type===fuel).slice(0,6);
 }
 
-function mkHTML(a) {
-  const l = getLatest(a.icao);
-  const ps = l ? `R$ ${(+l.price).toFixed(2)}` : '—';
-  const ds = l ? fmtS(l.created_at) : '';
-  return `<div class="mk-outer">
-    <div class="mk-box">
-      <span class="mk-icao">${a.icao}</span>
-      <span class="mk-price">${ps}</span>
-      ${ds ? `<span class="mk-date">${ds}</span>` : ''}
+function mkHTML(a){
+  const best=getLatestAny(a.icao);
+  const ps=best?`R$ ${(+best.p.price).toFixed(2)}`:'—';
+  const ft=best?best.f:'';
+  const ds=best?fmtS(best.p.created_at):'';
+  return `<div class="mk-o">
+    <div class="mk-b">
+      <span class="mk-i">${a.icao}</span>
+      ${ft?`<span class="mk-f"><span class="fdot ${FCLASS[ft]||''}"></span>${ft}</span>`:''}
+      <span class="mk-p">${ps}</span>
+      ${ds?`<span class="mk-d">${ds}</span>`:''}
     </div>
-    <div class="mk-pin"></div>
-    <div class="mk-dot"></div>
+    <div class="mk-pin"></div><div class="mk-dot"></div>
   </div>`;
 }
 
-function addMK(a) {
-  if (MK[a.icao]) { MK[a.icao].remove(); delete MK[a.icao]; }
-  const ico = L.divIcon({ className: '', html: mkHTML(a), iconAnchor: [37, 46], iconSize: null });
-  const m = L.marker([a.lat, a.lng], { icon: ico });
-  m.on('click', () => { if (pickMode) return; showPopup(a); });
+function addMK(a){
+  if(MK[a.icao]){MK[a.icao].remove();delete MK[a.icao];}
+  const ico=L.divIcon({className:'',html:mkHTML(a),iconAnchor:[37,46],iconSize:null});
+  const m=L.marker([a.lat,a.lng],{icon:ico});
+  m.on('click',()=>{if(pickMode)return; showPopup(a);});
   m.addTo(map);
-  MK[a.icao] = m;
+  MK[a.icao]=m;
 }
 
-function showPopup(a) {
-  const l = getLatest(a.icao), h = getLast6(a.icao);
-  const pbox = l
-    ? `<div class="pi-pbox">
-        <div><div style="font-size:10px;color:#8a9ab5;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Preço atual</div>
-        <div style="font-size:10px;color:#8a9ab5;margin-top:1px">${fmtD(l.created_at)}</div></div>
-        <div class="pi-pval">R$ ${(+l.price).toFixed(2)}</div>
-      </div>`
-    : `<div class="pi-empty">Sem preço cadastrado</div>`;
-  const hh = h.length
-    ? `<div class="pi-htitle">Últimas ${h.length} atualizações</div>` +
-      h.map(p => `<div class="pi-hrow">
-        <span class="pi-hdate">${fmtS(p.created_at)}</span>
-        <span class="pi-hwho">${p.user_email?.split('@')[0] || '?'}</span>
-        <span class="pi-hprice">R$ ${(+p.price).toFixed(2)}</span>
-      </div>`).join('')
-    : '';
-  L.popup({ maxWidth: 290 })
-    .setLatLng([a.lat, a.lng])
-    .setContent(`<div class="pi">
-      <div class="pi-icao">${a.icao}</div>
-      <div class="pi-name">${a.nome}</div>
-      ${pbox}${hh}
-    </div>`)
-    .openOn(map);
-  showHist(a);
-}
+function showPopup(a){
+  // Which fuels exist for this aerodrome?
+  const avFuels=FUELS.filter(f=>prices.some(p=>p.icao===a.icao&&p.fuel_type===f));
+  if(!popupFuel||!avFuels.includes(popupFuel)) popupFuel=avFuels[0]||'AVGAS';
 
-// ══════════════════════════════════════
-// PICK MODE
-// ══════════════════════════════════════
-function togglePick() {
-  if (!me) { openM('login'); return; }
-  if (pickMode) { cancelPick(); return; }
-  startPick();
-}
-
-function startPick() {
-  pickMode = true;
-  document.getElementById('map').classList.add('pick-mode');
-  document.getElementById('pick-banner').classList.add('on');
-  document.getElementById('fab-pick').classList.add('active-pick');
-  document.getElementById('fab-lbl-pick').textContent = 'Clique no mapa…';
-  // close sidebar on mobile to show map
-  if (window.innerWidth <= 600) {
-    document.getElementById('sb').classList.remove('on');
-    sbOpen = false;
+  function buildContent(fuel){
+    const l=getLatestByFuel(a.icao,fuel);
+    const h=getLast6(a.icao,fuel);
+    const tabs=avFuels.map(f=>`<button class="pi-ftab${f===fuel?' on':''}" onclick="window._popupFuel='${f}';window._repopup && window._repopup()">${f}</button>`).join('');
+    const pbox=l
+      ?`<div class="pi-pbox"><div><div style="font-size:10px;color:#8a9ab5;font-weight:700;text-transform:uppercase;letter-spacing:.06em">${fuel}</div><div style="font-size:10px;color:#8a9ab5;margin-top:1px">${fmtD(l.created_at)}</div></div><div class="pi-pval">R$ ${(+l.price).toFixed(2)}</div></div>`
+      :`<div class="pi-empty">Sem preço cadastrado para ${fuel}</div>`;
+    const hh=h.length?`<div class="pi-htitle">Últimas ${h.length} atualizações</div>`+h.map(p=>`<div class="pi-hrow"><span class="pi-hdate">${fmtS(p.created_at)}</span><span class="pi-hwho">${p.user_email?.split('@')[0]||'?'}</span><span class="pi-hprice">R$ ${(+p.price).toFixed(2)}</span></div>`).join(''):'';
+    return `<div class="pi"><div class="pi-icao">${a.icao}</div><div class="pi-name">${a.nome}</div><div class="pi-fuel-tabs">${tabs}</div>${pbox}${hh}</div>`;
   }
+
+  const popup=L.popup({maxWidth:310}).setLatLng([a.lat,a.lng]).setContent(buildContent(popupFuel)).openOn(map);
+  window._repopup=()=>{popupFuel=window._popupFuel;popup.setContent(buildContent(popupFuel));};
+  showHist(a,popupFuel);
 }
 
-// Called from the modal "Escolher" button
-function startPickFromModal() {
+// PICK MODE
+function togglePick(){
+  if(!me){openM('login');return;}
+  if(pickMode) cancelPick(); else startPick();
+}
+function startPick(){
+  pickMode=true;
+  document.getElementById('map').classList.add('pick');
+  document.getElementById('pbanner').classList.add('on');
+  document.getElementById('fab-pick').classList.add('picking');
+  document.getElementById('fab-lbl').textContent='Clique no mapa…';
+  if(window.innerWidth<=600){document.getElementById('sb').classList.remove('on');sbOpen=false;}
+}
+function startPickFromModal(){
   closeM('new');
   startPick();
 }
-
-function cancelPick() {
-  pickMode = false;
-  pendLL = null;
-  document.getElementById('map').classList.remove('pick-mode');
-  document.getElementById('pick-banner').classList.remove('on');
-  document.getElementById('fab-pick').classList.remove('active-pick');
-  document.getElementById('fab-lbl-pick').textContent = 'Novo aeródromo no mapa';
-  if (tmpMK) { tmpMK.remove(); tmpMK = null; }
+function cancelPick(){
+  pickMode=false; pendLL=null;
+  document.getElementById('map').classList.remove('pick');
+  document.getElementById('pbanner').classList.remove('on');
+  document.getElementById('fab-pick').classList.remove('picking');
+  document.getElementById('fab-lbl').textContent='Novo aeródromo no mapa';
+  if(tmpMK){tmpMK.remove();tmpMK=null;}
 }
-
-function setPickedLocation(latlng) {
-  pendLL = latlng;
-  // Update temp marker
-  if (tmpMK) tmpMK.remove();
-  tmpMK = L.marker([latlng.lat, latlng.lng], {
-    icon: L.divIcon({ className: '', html: '<div class="tmp-pin"></div>', iconAnchor: [7, 7] })
-  }).addTo(map);
-  // Update coord display
-  document.getElementById('coord-txt').textContent = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
-  // Turn off pick mode and open modal
-  pickMode = false;
-  document.getElementById('map').classList.remove('pick-mode');
-  document.getElementById('pick-banner').classList.remove('on');
-  document.getElementById('fab-pick').classList.remove('active-pick');
-  document.getElementById('fab-lbl-pick').textContent = 'Novo aeródromo no mapa';
-  // Open modal with position filled
+function setPickedLL(latlng){
+  pendLL=latlng;
+  if(tmpMK) tmpMK.remove();
+  tmpMK=L.marker([latlng.lat,latlng.lng],{icon:L.divIcon({className:'',html:'<div class="tmppin"></div>',iconAnchor:[7,7]})}).addTo(map);
+  document.getElementById('coord-txt').textContent=`${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
+  pickMode=false;
+  document.getElementById('map').classList.remove('pick');
+  document.getElementById('pbanner').classList.remove('on');
+  document.getElementById('fab-pick').classList.remove('picking');
+  document.getElementById('fab-lbl').textContent='Novo aeródromo no mapa';
   openM('new');
 }
 
-// ══════════════════════════════════════
-// SAVE NEW AERODROME
-// ══════════════════════════════════════
-async function saveNewAero() {
-  const icao  = document.getElementById('new-icao').value.trim().toUpperCase();
-  const nome  = document.getElementById('new-nome').value.trim();
-  const price = parseFloat(document.getElementById('new-price').value);
-
-  // Validate
-  if (!pendLL) return showAl('new', '📍 Escolha a posição no mapa clicando em "Escolher".', 'w');
-  if (!icao || icao.length < 2) return showAl('new', 'Indicativo ICAO inválido (mínimo 2 letras).', 'e');
-  if (!nome) return showAl('new', 'Informe o nome do aeródromo.', 'e');
-  if (aeros.find(a => a.icao === icao)) return showAl('new', `O código ${icao} já existe no sistema.`, 'e');
-
-  setLoad('btn-new', true, 'Salvando…');
-  try {
-    const novo = await ins('aeros', { icao, nome, lat: pendLL.lat, lng: pendLL.lng, added_by: me.email });
+// SAVE NEW AERO
+async function saveNewAero(){
+  const icao=document.getElementById('new-icao').value.trim().toUpperCase();
+  const nome=document.getElementById('new-nome').value.trim();
+  const fuel=document.getElementById('new-fuel').value;
+  const price=parseFloat(document.getElementById('new-price').value);
+  if(!pendLL) return showAl('new','📍 Escolha a posição clicando em "Escolher" e depois no mapa.','w');
+  if(!icao||icao.length<2) return showAl('new','Indicativo ICAO inválido.','e');
+  if(!nome) return showAl('new','Informe o nome do aeródromo.','e');
+  if(aeros.find(a=>a.icao===icao)) return showAl('new',`O código ${icao} já existe no sistema.`,'e');
+  setLoad('btn-new',true,'Salvando…');
+  try{
+    const novo=await dbI('aeros',{icao,nome,lat:pendLL.lat,lng:pendLL.lng,added_by:me.email});
     aeros.push(novo);
-    await addLog('create_aero', `Criou aeródromo ${icao} — ${nome}`);
-
-    if (price > 0) {
-      const pr = await ins('prices', { icao, price, user_email: me.email });
+    await addLog('create_aero',`Criou aeródromo ${icao} — ${nome}`);
+    if(fuel&&price>0){
+      const pr=await dbI('prices',{icao,fuel_type:fuel,price,user_email:me.email});
       prices.unshift(pr);
-      await addLog('price', `Preço R$ ${price.toFixed(2)} em ${icao}`);
+      await addLog('price',`Preço R$ ${price.toFixed(2)} (${fuel}) em ${icao}`);
     }
-
-    addMK(novo);
-    updateStats();
-    populateSB();
+    addMK(novo); updateStats(); populateSB();
     closeM('new');
-    // Clean up
-    if (tmpMK) { tmpMK.remove(); tmpMK = null; }
-    pendLL = null;
-    document.getElementById('coord-txt').textContent = 'Nenhuma posição selecionada';
-    ['new-icao','new-nome','new-price'].forEach(id => document.getElementById(id).value = '');
-    // Fly to new point
-    map.flyTo([novo.lat, novo.lng], 11, { duration: 1 });
-    setTimeout(() => showPopup(novo), 1200);
-  } catch(e) {
-    showAl('new', 'Erro ao salvar: ' + e.message, 'e');
-  }
-  setLoad('btn-new', false, 'Salvar aeródromo');
+    if(tmpMK){tmpMK.remove();tmpMK=null;}
+    pendLL=null;
+    document.getElementById('coord-txt').textContent='Nenhuma selecionada';
+    ['new-icao','new-nome','new-price'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('new-fuel').value='';
+    map.flyTo([novo.lat,novo.lng],11,{duration:1});
+    setTimeout(()=>showPopup(novo),1200);
+  }catch(e){showAl('new','Erro: '+e.message,'e');}
+  setLoad('btn-new',false,'Salvar aeródromo');
 }
 
-// ══════════════════════════════════════
 // AUTH
-// ══════════════════════════════════════
-async function registerUser() {
-  const nome  = document.getElementById('rg-nome').value.trim();
-  const cpf   = document.getElementById('rg-cpf').value.trim();
-  const email = document.getElementById('rg-email').value.trim();
-  if (!regType) return showAl('reg', 'Selecione o tipo de usuário.', 'e');
-  if (!nome)   return showAl('reg', 'Informe seu nome.', 'e');
-  if (!cpf || cpf.replace(/\D/g,'').length !== 11) return showAl('reg', 'CPF inválido.', 'e');
-  if (!email || !email.includes('@')) return showAl('reg', 'E-mail inválido.', 'e');
-  setLoad('btn-reg', true, 'Criando conta…');
-  try {
-    const { data: ex } = await db.from('users').select('id').or(`email.eq.${email},cpf.eq.${cpf}`);
-    if (ex && ex.length) { showAl('reg', 'E-mail ou CPF já cadastrado.', 'e'); setLoad('btn-reg', false, 'Criar conta'); return; }
-    const u = await ins('users', { nome, cpf, email, type: regType });
-    showAl('reg', 'Conta criada! Entrando…', 's');
-    setTimeout(() => { doLogin(u); closeM('register'); }, 900);
-  } catch(e) { showAl('reg', 'Erro: ' + e.message, 'e'); }
-  setLoad('btn-reg', false, 'Criar conta');
+async function registerUser(){
+  const nome=document.getElementById('rg-nome').value.trim();
+  const cpf=document.getElementById('rg-cpf').value.trim();
+  const email=document.getElementById('rg-email').value.trim();
+  if(!regType) return showAl('reg','Selecione o tipo de usuário.','e');
+  if(!nome) return showAl('reg','Informe seu nome.','e');
+  if(!cpf||cpf.replace(/\D/g,'').length!==11) return showAl('reg','CPF inválido.','e');
+  if(!email||!email.includes('@')) return showAl('reg','E-mail inválido.','e');
+  setLoad('btn-reg',true,'Criando…');
+  try{
+    const{data:ex}=await db.from('users').select('id').or(`email.eq.${email},cpf.eq.${cpf}`);
+    if(ex&&ex.length){showAl('reg','E-mail ou CPF já cadastrado.','e');setLoad('btn-reg',false,'Criar conta');return;}
+    const u=await dbI('users',{nome,cpf,email,type:regType});
+    showAl('reg','Conta criada!','s');
+    setTimeout(()=>{doLogin(u);closeM('register');},900);
+  }catch(e){showAl('reg','Erro: '+e.message,'e');}
+  setLoad('btn-reg',false,'Criar conta');
 }
-
-async function loginUser() {
-  const email = document.getElementById('lg-email').value.trim();
-  const cpf   = document.getElementById('lg-cpf').value.trim();
-  setLoad('btn-login', true, 'Entrando…');
-  const { data, error } = await db.from('users').select('*').eq('email', email).eq('cpf', cpf).single();
-  if (error || !data) { showAl('login', 'E-mail ou CPF incorretos.', 'e'); setLoad('btn-login', false, 'Entrar'); return; }
-  doLogin(data); closeM('login');
-  setLoad('btn-login', false, 'Entrar');
+async function loginUser(){
+  const email=document.getElementById('lg-email').value.trim();
+  const cpf=document.getElementById('lg-cpf').value.trim();
+  setLoad('btn-login',true,'Entrando…');
+  const{data,error}=await db.from('users').select('*').eq('email',email).eq('cpf',cpf).single();
+  if(error||!data){showAl('login','E-mail ou CPF incorretos.','e');setLoad('btn-login',false,'Entrar');return;}
+  doLogin(data);closeM('login');setLoad('btn-login',false,'Entrar');
 }
-
-function doLogin(u) { me = u; localStorage.setItem('avgas_me', JSON.stringify(u)); refreshUI(); }
-function logout()   { me = null; localStorage.removeItem('avgas_me'); refreshUI(); cancelPick(); }
-
-function refreshUI() {
-  const tbr = document.getElementById('tbr');
-  const sb  = document.getElementById('sb');
-  const fabs = document.getElementById('fabs');
-  if (me) {
-    const ini = me.nome.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
-    tbr.innerHTML = `<span style="font-size:12px;color:var(--muted)">Olá, <b style="color:var(--text)">${me.nome.split(' ')[0]}</b></span>`;
-    document.getElementById('ua').textContent = ini;
-    document.getElementById('un').textContent = me.nome;
-    document.getElementById('ut').textContent = tLabel(me.type);
-    fabs.classList.add('on');
-    sb.classList.add('on'); sbOpen = true;
+function doLogin(u){me=u;localStorage.setItem('avgas_me',JSON.stringify(u));refreshUI();}
+function logout(){me=null;localStorage.removeItem('avgas_me');refreshUI();cancelPick();}
+function refreshUI(){
+  const tbr=document.getElementById('tbr'),sb=document.getElementById('sb'),fabs=document.getElementById('fabs');
+  if(me){
+    const ini=me.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    tbr.innerHTML=`<span style="font-size:12px;color:var(--mut)">Olá, <b style="color:var(--txt)">${me.nome.split(' ')[0]}</b></span>`;
+    document.getElementById('ua').textContent=ini;
+    document.getElementById('un').textContent=me.nome;
+    document.getElementById('ut').textContent=tLabel(me.type);
+    fabs.classList.add('on');sb.classList.add('on');sbOpen=true;
     populateSB();
-  } else {
-    tbr.innerHTML = `<button class="btn" onclick="openM('login')">Entrar</button><button class="btn btn-a" onclick="openM('register')">Cadastrar</button>`;
-    fabs.classList.remove('on');
-    sb.classList.remove('on'); sbOpen = false;
+  }else{
+    tbr.innerHTML=`<button class="btn" onclick="openM('login')">Entrar</button><button class="btn btn-a" onclick="openM('register')">Cadastrar</button>`;
+    fabs.classList.remove('on');sb.classList.remove('on');sbOpen=false;
   }
 }
 
-// ══════════════════════════════════════
 // PRICES
-// ══════════════════════════════════════
-async function submitPrice() {
-  const icao  = document.getElementById('rep-icao').value;
-  const price = parseFloat(document.getElementById('rep-price').value);
-  if (!icao)         return fb('Selecione um aeródromo.', 'e');
-  if (!price || price <= 0) return fb('Informe um preço válido.', 'e');
-  setLoad('btn-enviar', true, '…');
-  try {
-    const pr = await ins('prices', { icao, price, user_email: me.email });
+async function submitPrice(){
+  const icao=document.getElementById('rep-icao').value;
+  const fuel=document.getElementById('rep-fuel').value;
+  const price=parseFloat(document.getElementById('rep-price').value);
+  if(!icao) return fb('Selecione um aeródromo.','e');
+  if(!price||price<=0) return fb('Informe um preço válido.','e');
+  setLoad('btn-env',true,'…');
+  try{
+    const pr=await dbI('prices',{icao,fuel_type:fuel,price,user_email:me.email});
     prices.unshift(pr);
-    await addLog('price', `Preço R$ ${price.toFixed(2)} em ${icao}`);
-    document.getElementById('rep-price').value = '';
-    fb(`R$ ${price.toFixed(2)} registrado em ${icao}!`, 's');
-    addMK(aeros.find(a => a.icao === icao));
-    updateStats(); populateSB();
-  } catch(e) { fb('Erro: ' + e.message, 'e'); }
-  setLoad('btn-enviar', false, 'Enviar');
+    await addLog('price',`R$ ${price.toFixed(2)} (${fuel}) em ${icao}`);
+    document.getElementById('rep-price').value='';
+    fb(`R$ ${price.toFixed(2)} registrado (${fuel}) em ${icao}!`,'s');
+    addMK(aeros.find(a=>a.icao===icao));
+    updateStats();populateSB();
+  }catch(e){fb('Erro: '+e.message,'e');}
+  setLoad('btn-env',false,'Enviar');
+}
+function fb(msg,t){
+  const el=document.getElementById('rep-fb');
+  el.style.display='block';el.className=`al al-${t==='s'?'s':'e'}`;el.textContent=msg;
+  setTimeout(()=>el.style.display='none',3500);
 }
 
-function fb(msg, t) {
-  const el = document.getElementById('rep-fb');
-  el.style.display = 'block';
-  el.className = `al al-${t === 's' ? 's' : 'e'}`;
-  el.textContent = msg;
-  setTimeout(() => el.style.display = 'none', 3500);
-}
-
-// ══════════════════════════════════════
 // SIDEBAR
-// ══════════════════════════════════════
-function populateSB() {
-  // Select
-  const sel = document.getElementById('rep-icao');
-  const sorted = [...aeros].sort((a,b) => a.icao.localeCompare(b.icao));
-  sel.innerHTML = '<option value="">Selecione o aeródromo…</option>' +
-    sorted.map(a => `<option value="${a.icao}">${a.icao} — ${a.nome}</option>`).join('');
-  // Recent
+function populateSB(){
+  const sel=document.getElementById('rep-icao');
+  sel.innerHTML='<option value="">Selecione o aeródromo…</option>'+[...aeros].sort((a,b)=>a.icao.localeCompare(b.icao)).map(a=>`<option value="${a.icao}">${a.icao} — ${a.nome}</option>`).join('');
   populateRepList();
   populateAeroList('');
 }
-
-function populateRepList() {
-  const el = document.getElementById('rep-list');
-  const last = prices.slice(0, 20);
-  el.innerHTML = last.length
-    ? last.map(p => `<div class="ur">
-        <div class="ul2">
-          <div class="uic">${p.icao}</div>
-          <div class="uwh">${p.user_email?.split('@')[0] || '?'}</div>
-        </div>
-        <div style="text-align:right">
-          <div class="up2">R$ ${(+p.price).toFixed(2)}</div>
-          <div class="ud">${fmtD(p.created_at)}</div>
-        </div>
-      </div>`).join('')
-    : `<div class="empty">Nenhuma atualização ainda</div>`;
+function populateRepList(){
+  const el=document.getElementById('rep-list'),last=prices.slice(0,25);
+  el.innerHTML=last.length?last.map(p=>`<div class="ur">
+    <div class="ul2"><div class="uic">${p.icao}</div><div class="uwh">${p.user_email?.split('@')[0]||'?'}</div></div>
+    <div style="text-align:right">
+      <div class="up2">R$ ${(+p.price).toFixed(2)}</div>
+      <div class="uf"><span class="fdot ${FCLASS[p.fuel_type]||''}" style="width:6px;height:6px"></span>${p.fuel_type||'AVGAS'}</div>
+      <div class="ud">${fmtD(p.created_at)}</div>
+    </div>
+  </div>`).join(''):`<div class="empty">Nenhuma atualização</div>`;
 }
-
-let _q = '';
-function filterAeros(q) { _q = q.toLowerCase(); populateAeroList(_q); }
-
-function populateAeroList(q) {
-  const el = document.getElementById('aero-list');
-  const list = aeros
-    .filter(a => !q || a.icao.toLowerCase().includes(q) || a.nome.toLowerCase().includes(q))
-    .sort((a,b) => a.icao.localeCompare(b.icao));
-  el.innerHTML = list.length
-    ? list.map(a => {
-        const l = getLatest(a.icao), isNew = !DEFSET.has(a.icao);
-        return `<div class="ar" onclick="flyTo('${a.icao}')">
-          <span class="aic">${a.icao}</span>
-          <span class="an">${a.nome}</span>
-          ${isNew ? `<span class="nb">Novo</span>` : ''}
-          ${l ? `<span class="ap2">R$ ${(+l.price).toFixed(2)}</span>` : `<span class="and">—</span>`}
-        </div>`;
-      }).join('')
-    : `<div class="empty">Nenhum resultado</div>`;
+let _q='';
+function filterAeros(q){_q=q.toLowerCase();populateAeroList(_q);}
+function populateAeroList(q){
+  const el=document.getElementById('aero-list');
+  const DEF_SET=new Set(['SBGR','SBSP','SBJD','SBKP','SBBE','SBBR','SBGL','SBSV','SBRF','SBFZ','SBPA','SBCT','SBFL','SBMN','SBEG','SBMO','SBTE','SBSL','SBMG','SBLO','SBCG','SBCY','SBVT','SBJP','SBNT','SBMK','SBUR','SBUL','SBGO','SWLC']);
+  const list=aeros.filter(a=>!q||a.icao.toLowerCase().includes(q)||a.nome.toLowerCase().includes(q)).sort((a,b)=>a.icao.localeCompare(b.icao));
+  el.innerHTML=list.length?list.map(a=>{
+    const best=getLatestAny(a.icao);const isNew=!DEF_SET.has(a.icao);
+    return`<div class="ar" onclick="flyTo('${a.icao}')">
+      <span class="aic">${a.icao}</span><span class="an">${a.nome}</span>
+      ${isNew?`<span class="nb">Novo</span>`:''}
+      ${best?`<span class="ap2">R$ ${(+best.p.price).toFixed(2)}</span>`:`<span class="and">—</span>`}
+    </div>`;
+  }).join(''):`<div class="empty">Nenhum resultado</div>`;
 }
-
-function showHist(a) {
-  const el = document.getElementById('hist-list');
-  const h = getLast6(a.icao);
-  el.innerHTML = h.length
-    ? `<div style="padding:10px 16px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">${a.icao} — ${a.nome}</div>` +
-      h.map(p => `<div class="ur">
-        <div class="ul2">
-          <div class="uic" style="color:var(--muted);font-size:11px;font-weight:400">${fmtD(p.created_at)}</div>
-          <div class="uwh">${p.user_email?.split('@')[0] || '?'}</div>
-        </div>
-        <div class="up2">R$ ${(+p.price).toFixed(2)}</div>
-      </div>`).join('')
-    : `<div class="empty">${a.icao} — sem histórico</div>`;
-  // Switch tab
-  document.querySelectorAll('.tb').forEach(b => b.classList.remove('on'));
+function showHist(a,fuel){
+  fuel=fuel||popupFuel||'AVGAS';
+  const el=document.getElementById('hist-list'),h=getLast6(a.icao,fuel);
+  el.innerHTML=h.length
+    ?`<div style="padding:10px 16px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mut)">${a.icao} — ${a.nome} (${fuel})</div>`+h.map(p=>`<div class="ur"><div class="ul2"><div class="uic" style="color:var(--mut);font-size:11px;font-weight:400">${fmtD(p.created_at)}</div><div class="uwh">${p.user_email?.split('@')[0]||'?'}</div></div><div class="up2">R$ ${(+p.price).toFixed(2)}</div></div>`).join('')
+    :`<div class="empty">${a.icao} — sem histórico para ${fuel}</div>`;
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
   document.querySelector('[data-t="hist"]').classList.add('on');
-  document.querySelectorAll('.tc2').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.tc2').forEach(t=>t.classList.remove('on'));
   document.getElementById('tab-hist').classList.add('on');
 }
-
-async function populateLog() {
-  const el = document.getElementById('log-list');
-  el.innerHTML = `<div class="empty"><span class="spin"></span> Carregando…</div>`;
-  const logs = await q('audit_log');
-  if (!logs.length) { el.innerHTML = `<div class="empty">Nenhuma ação registrada</div>`; return; }
-  el.innerHTML = `<div style="overflow-x:auto"><table class="lt">
-    <thead><tr><th>Data</th><th>Usuário</th><th>Tipo</th><th>Ação</th><th>Detalhe</th></tr></thead>
-    <tbody>${logs.map(l => `<tr>
-      <td style="white-space:nowrap">${fmtD(l.created_at)}</td>
-      <td>${l.user_name?.split(' ')[0] || l.user_email}</td>
-      <td>${tLabel(l.user_type)}</td>
-      <td><span class="la ${l.action==='price'?'la-p':'la-c'}">${l.action==='price'?'Preço':'Criação'}</span></td>
-      <td>${l.detail || ''}</td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
+async function populateLog(){
+  const el=document.getElementById('log-list');
+  el.innerHTML=`<div class="empty"><span class="spin"></span> Carregando…</div>`;
+  const logs=await dbQ('audit_log');
+  if(!logs.length){el.innerHTML=`<div class="empty">Nenhuma ação registrada</div>`;return;}
+  el.innerHTML=`<div style="overflow-x:auto"><table class="lt"><thead><tr><th>Data</th><th>Usuário</th><th>Tipo</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody>${logs.map(l=>`<tr><td style="white-space:nowrap">${fmtD(l.created_at)}</td><td>${l.user_name?.split(' ')[0]||l.user_email}</td><td>${tLabel(l.user_type)}</td><td><span class="la ${l.action==='price'?'la-p':'la-c'}">${l.action==='price'?'Preço':'Criação'}</span></td><td>${l.detail||''}</td></tr>`).join('')}</tbody></table></div>`;
 }
-
-function flyTo(icao) {
-  const a = aeros.find(a => a.icao === icao);
-  if (!a) return;
-  map.flyTo([a.lat, a.lng], 11, { duration: 1 });
-  setTimeout(() => showPopup(a), 1100);
+function flyTo(icao){
+  const a=aeros.find(a=>a.icao===icao);if(!a)return;
+  map.flyTo([a.lat,a.lng],11,{duration:1});
+  setTimeout(()=>showPopup(a),1100);
 }
-
-function updateStats() {
-  const w = aeros.filter(a => getLatest(a.icao)).length;
-  document.getElementById('st-total').textContent = `${aeros.length} aeródromos`;
-  document.getElementById('st-price').textContent = `${w} com preço`;
+function updateStats(){
+  const w=aeros.filter(a=>getLatestAny(a.icao)).length;
+  document.getElementById('st-t').textContent=`${aeros.length} aeródromos`;
+  document.getElementById('st-p').textContent=`${w} com preço`;
 }
-
-// ══════════════════════════════════════
-// UI HELPERS
-// ══════════════════════════════════════
-function swTab(btn) {
-  const t = btn.dataset.t;
-  document.querySelectorAll('.tb').forEach(b => b.classList.remove('on')); btn.classList.add('on');
-  document.querySelectorAll('.tc2').forEach(x => x.classList.remove('on'));
-  document.getElementById('tab-' + t).classList.add('on');
-  if (t === 'log') populateLog();
+// UI
+function swTab(btn){
+  const t=btn.dataset.t;
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  document.querySelectorAll('.tc2').forEach(x=>x.classList.remove('on'));
+  document.getElementById('tab-'+t).classList.add('on');
+  if(t==='log') populateLog();
 }
+function toggleSB(){sbOpen=!sbOpen;document.getElementById('sb').classList.toggle('on',sbOpen);document.getElementById('fab-main').textContent=sbOpen?'✕':'☰';}
+function openM(id){document.getElementById('mo-'+id).classList.add('on');}
+function closeM(id){document.getElementById('mo-'+id).classList.remove('on');}
+document.querySelectorAll('.mo').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on');}));
+function pickType(el){document.querySelectorAll('.tc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');regType=el.dataset.type;}
+function showAl(id,msg,t){const el=document.getElementById('al-'+id);el.style.display='block';el.className=`al al-${t==='s'?'s':t==='i'?'i':t==='w'?'w':'e'}`;el.textContent=msg;}
+function setLoad(id,on,label){const el=document.getElementById(id);el.disabled=on;el.innerHTML=on?`<span class="spin"></span> ${label}`:label;}
+function mCPF(el){let v=el.value.replace(/\D/g,'').slice(0,11);if(v.length>9)v=v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4');else if(v.length>6)v=v.replace(/^(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3');else if(v.length>3)v=v.replace(/^(\d{3})(\d{0,3})/,'$1.$2');el.value=v;}
+function fmtD(ts){const d=new Date(ts);return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function fmtS(ts){const d=new Date(ts);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function tLabel(t){return t==='fornecedor'?'Fornecedor':t==='piloto'?'Piloto':t==='interessado'?'Interessado':t||'–';}
 
-function toggleSB() {
-  sbOpen = !sbOpen;
-  document.getElementById('sb').classList.toggle('on', sbOpen);
-  document.getElementById('fab-main').textContent = sbOpen ? '✕' : '☰';
-}
-
-function openM(id)  { document.getElementById('mo-' + id).classList.add('on'); }
-function closeM(id) { document.getElementById('mo-' + id).classList.remove('on'); }
-document.querySelectorAll('.mo').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('on'); }));
-
-function pickType(el) {
-  document.querySelectorAll('.tc').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel'); regType = el.dataset.type;
-}
-
-function showAl(id, msg, t) {
-  const el = document.getElementById('al-' + id);
-  el.style.display = 'block';
-  el.className = `al al-${t === 's' ? 's' : t === 'i' ? 'i' : t === 'w' ? 'w' : 'e'}`;
-  el.textContent = msg;
-}
-
-function setLoad(id, on, label) {
-  const el = document.getElementById(id);
-  el.disabled = on;
-  el.innerHTML = on ? `<span class="spin"></span> ${label}` : label;
-}
-
-function mCPF(el) {
-  let v = el.value.replace(/\D/g,'').slice(0,11);
-  if (v.length > 9) v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
-  else if (v.length > 6) v = v.replace(/^(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
-  else if (v.length > 3) v = v.replace(/^(\d{3})(\d{0,3})/, '$1.$2');
-  el.value = v;
-}
-
-function fmtD(ts) {
-  const d = new Date(ts);
-  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-}
-function fmtS(ts) {
-  const d = new Date(ts);
-  return d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-}
-function tLabel(t) {
-  return t === 'fornecedor' ? 'Fornecedor' : t === 'piloto' ? 'Piloto' : t === 'interessado' ? 'Interessado' : t || '–';
-}
-
-// ══════════════════════════════════════
-// INIT
-// ══════════════════════════════════════
 initMap();
-if (me) refreshUI();
+if(me) refreshUI();
 </script>
 </body>
 </html>
