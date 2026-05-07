@@ -36,8 +36,21 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
 .leaflet-control-zoom a:hover{background:var(--light)!important}
 .leaflet-control-attribution{display:none}
 .leaflet-control-zoom{margin-bottom:60px!important}
+/* FUEL FILTER BAR */
+.fbar{height:40px;background:var(--mid);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 12px;gap:6px;overflow-x:auto;flex-shrink:0;z-index:999;scrollbar-width:none}
+.fbar::-webkit-scrollbar{display:none}
+.fbar-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);white-space:nowrap;flex-shrink:0;margin-right:2px}
+.fpill{padding:4px 11px;border-radius:20px;border:1px solid var(--bdr);background:var(--ibg);color:var(--mut);font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .18s;display:flex;align-items:center;gap:5px;touch-action:manipulation}
+.fpill:hover{border-color:rgba(255,255,255,.2);color:var(--txt)}
+.fpill.on{color:#0a1628;border-color:transparent}
+.fpill.on.f-avgas{background:#f4a620}
+.fpill.on.f-jeta{background:#4db8ff}
+.fpill.on.f-jetai{background:#a78bfa}
+.fpill.on.f-brjet{background:#2ec97e}
+.fpill.on.f-brjeti{background:#fb923c}
+.fpill .fdot{flex-shrink:0}
 /* PICK BANNER */
-.pbanner{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--acc);color:#0a1628;padding:9px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:2000;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.pbanner{position:fixed;top:98px;left:50%;transform:translateX(-50%);background:var(--acc);color:#0a1628;padding:9px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:2000;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 .pbanner.on{display:flex;align-items:center;gap:12px}
 .pbanner .cancel{cursor:pointer;text-decoration:underline;font-weight:400}
 /* TEMP MARKER */
@@ -184,6 +197,14 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
   </div>
 </div>
 <div id="map"></div>
+<div class="fbar" id="fbar">
+  <span class="fbar-label">Filtrar:</span>
+  <button class="fpill f-avgas on" data-fuel="AVGAS" onclick="toggleFuel(this)"><span class="fdot" style="width:8px;height:8px;border-radius:50%;background:#f4a620;display:inline-block"></span>AVGAS</button>
+  <button class="fpill f-jeta on" data-fuel="JET-A" onclick="toggleFuel(this)"><span class="fdot" style="width:8px;height:8px;border-radius:50%;background:#4db8ff;display:inline-block"></span>JET-A</button>
+  <button class="fpill f-jetai on" data-fuel="JET-A INTER" onclick="toggleFuel(this)"><span class="fdot" style="width:8px;height:8px;border-radius:50%;background:#a78bfa;display:inline-block"></span>JET-A INTER</button>
+  <button class="fpill f-brjet on" data-fuel="BR JET PLUS" onclick="toggleFuel(this)"><span class="fdot" style="width:8px;height:8px;border-radius:50%;background:#2ec97e;display:inline-block"></span>BR JET PLUS</button>
+  <button class="fpill f-brjeti on" data-fuel="BR JET PLUS INTER" onclick="toggleFuel(this)"><span class="fdot" style="width:8px;height:8px;border-radius:50%;background:#fb923c;display:inline-block"></span>BR JET PLUS INTER</button>
+</div>
 <div class="pbanner" id="pbanner">📍 Clique no mapa para posicionar o aeródromo <span class="cancel" onclick="cancelPick()">✕ Cancelar</span></div>
 <div class="stats">
   <div class="sp"><div class="sd"></div><span id="st-t">—</span></div>
@@ -374,7 +395,13 @@ function getLast6(icao,fuel){
 }
 
 function mkHTML(a){
-  const best=getLatestAny(a.icao);
+  // Show best price from currently ACTIVE fuels only
+  let best=null;
+  for(const f of FUELS){
+    if(!activeFuels.has(f)) continue;
+    const p=getLatestByFuel(a.icao,f);
+    if(p){best={p,f};break;}
+  }
   const ps=best?`R$ ${(+best.p.price).toFixed(2)}`:'—';
   const ft=best?best.f:'';
   const ds=best?fmtS(best.p.created_at):'';
@@ -396,6 +423,7 @@ function addMK(a){
   m.on('click',()=>{if(pickMode)return; showPopup(a);});
   m.addTo(map);
   MK[a.icao]=m;
+  updateMKVisibility(a);
 }
 
 function showPopup(a){
@@ -584,14 +612,28 @@ function populateAeroList(q){
   const el=document.getElementById('aero-list');
   const DEF_SET=new Set(['SBGR','SBSP','SBJD','SBKP','SBBE','SBBR','SBGL','SBSV','SBRF','SBFZ','SBPA','SBCT','SBFL','SBMN','SBEG','SBMO','SBTE','SBSL','SBMG','SBLO','SBCG','SBCY','SBVT','SBJP','SBNT','SBMK','SBUR','SBUL','SBGO','SWLC']);
   const list=aeros.filter(a=>!q||a.icao.toLowerCase().includes(q)||a.nome.toLowerCase().includes(q)).sort((a,b)=>a.icao.localeCompare(b.icao));
-  el.innerHTML=list.length?list.map(a=>{
+  if(!list.length){
+    // If query looks like an ICAO (2-4 letters) and user is logged in, offer to add
+    const isIcao=q&&q.length>=2&&q.length<=4&&/^[a-z0-9]+$/.test(q);
+    const icaoUp=q.toUpperCase();
+    el.innerHTML=`<div class="empty" style="padding:20px 16px">
+      <div style="margin-bottom:12px;color:var(--mut)">Nenhum resultado para <b style="color:var(--txt)">${q||'—'}</b></div>
+      ${(isIcao&&me)?`<button class="btn btn-a btn-sm" id="btn-add-icao" onclick="addAeroFromSearch('${icaoUp}')">
+        <span class="spin" id="icao-spin" style="display:none"></span> ➕ Adicionar ${icaoUp} ao mapa
+      </button><div id="icao-search-msg" style="margin-top:8px;font-size:12px;color:var(--mut)"></div>`
+      :me?`<button class="btn btn-sm" onclick="openM('new')">➕ Adicionar aeródromo manualmente</button>`
+      :`<span style="font-size:12px">Faça login para adicionar aeródromos</span>`}
+    </div>`;
+    return;
+  }
+  el.innerHTML=list.map(a=>{
     const best=getLatestAny(a.icao);const isNew=!DEF_SET.has(a.icao);
     return`<div class="ar" onclick="flyTo('${a.icao}')">
       <span class="aic">${a.icao}</span><span class="an">${a.nome}</span>
       ${isNew?`<span class="nb">Novo</span>`:''}
       ${best?`<span class="ap2">R$ ${(+best.p.price).toFixed(2)}</span>`:`<span class="and">—</span>`}
     </div>`;
-  }).join(''):`<div class="empty">Nenhum resultado</div>`;
+  }).join('');
 }
 function showHist(a,fuel){
   fuel=fuel||popupFuel||'AVGAS';
@@ -640,6 +682,118 @@ function mCPF(el){let v=el.value.replace(/\D/g,'').slice(0,11);if(v.length>9)v=v
 function fmtD(ts){const d=new Date(ts);return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
 function fmtS(ts){const d=new Date(ts);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
 function tLabel(t){return t==='fornecedor'?'Fornecedor':t==='piloto'?'Piloto':t==='interessado'?'Interessado':t||'–';}
+
+// ── FUEL FILTER ──────────────────────────────────────────────
+let activeFuels=new Set(['AVGAS','JET-A','JET-A INTER','BR JET PLUS','BR JET PLUS INTER']);
+
+function toggleFuel(btn){
+  const f=btn.dataset.fuel;
+  if(activeFuels.has(f)){
+    // Don't allow deselecting the last one
+    if(activeFuels.size===1) return;
+    activeFuels.delete(f);
+    btn.classList.remove('on');
+  } else {
+    activeFuels.add(f);
+    btn.classList.add('on');
+  }
+  // Rebuild all markers to show/hide based on filter
+  aeros.forEach(a=>updateMKVisibility(a));
+}
+
+function updateMKVisibility(a){
+  if(!MK[a.icao]) return;
+  // Check if this aerodrome has any price for an active fuel
+  const hasActiveFuel=FUELS.some(f=>activeFuels.has(f)&&getLatestByFuel(a.icao,f));
+  // Always show aeros that have no price (so they're discoverable)
+  // Hide only if it has prices BUT none match active fuels
+  const hasSomeprice=FUELS.some(f=>getLatestByFuel(a.icao,f));
+  if(hasSomeprice&&!hasActiveFuel){
+    MK[a.icao].setOpacity(0);
+    MK[a.icao].options.interactive=false;
+    MK[a.icao].getElement()&&(MK[a.icao].getElement().style.pointerEvents='none');
+  } else {
+    MK[a.icao].setOpacity(1);
+    MK[a.icao].options.interactive=true;
+    MK[a.icao].getElement()&&(MK[a.icao].getElement().style.pointerEvents='auto');
+  }
+}
+
+// ── ICAO LOOKUP (OpenAIP / fallback manual) ───────────────────
+async function addAeroFromSearch(icao){
+  const btn=document.getElementById('btn-add-icao');
+  const msg=document.getElementById('icao-search-msg');
+  const spin=document.getElementById('icao-spin');
+  if(!btn) return;
+  btn.disabled=true; spin.style.display='inline-block';
+  msg.textContent='Buscando coordenadas para '+icao+'…';
+
+  let lat=null,lng=null,nome=icao;
+
+  // Try OpenAIP public API (no key needed for basic lookup)
+  try{
+    const r=await fetch(`https://api.aviationapi.com/v1/airports?apt=${icao}`);
+    if(r.ok){
+      const d=await r.json();
+      const list=Object.values(d);
+      if(list.length&&list[0].length){
+        const a=list[0][0];
+        lat=parseFloat(a.latitude);lng=parseFloat(a.longitude);
+        nome=a.facility_name||icao;
+      }
+    }
+  }catch(_){}
+
+  // Fallback: try ourairports CSV via a CORS proxy
+  if(!lat){
+    try{
+      const r=await fetch(`https://ourairports.com/airports/${icao}/row.json`);
+      if(r.ok){
+        const d=await r.json();
+        lat=parseFloat(d.latitude_deg);lng=parseFloat(d.longitude_deg);
+        nome=d.name||icao;
+      }
+    }catch(_){}
+  }
+
+  // Fallback: REDEMET (Brazilian aeronautical data)
+  if(!lat){
+    try{
+      const r=await fetch(`https://api.redemet.aer.mil.br/aerodromos/info?api_key=&icao=${icao}`,{headers:{'accept':'application/json'}});
+      if(r.ok){
+        const d=await r.json();
+        if(d.data&&d.data.lat&&d.data.lon){
+          lat=parseFloat(d.data.lat);lng=parseFloat(d.data.lon);
+          nome=d.data.nome||icao;
+        }
+      }
+    }catch(_){}
+  }
+
+  btn.disabled=false; spin.style.display='none';
+
+  if(lat&&lng&&!isNaN(lat)&&!isNaN(lng)){
+    msg.textContent='';
+    // Pre-fill modal and set position
+    pendLL={lat,lng};
+    document.getElementById('coord-txt').textContent=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('new-icao').value=icao;
+    document.getElementById('new-nome').value=nome;
+    // Place temp marker
+    if(tmpMK) tmpMK.remove();
+    tmpMK=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="tmppin"></div>',iconAnchor:[7,7]})}).addTo(map);
+    map.flyTo([lat,lng],10,{duration:1.2});
+    // Open modal after fly
+    setTimeout(()=>openM('new'),600);
+  } else {
+    msg.textContent='Não encontrei coordenadas automáticas. Abre o mapa e posicione manualmente.';
+    // Open modal for manual placement
+    setTimeout(()=>{
+      document.getElementById('new-icao').value=icao;
+      openM('new');
+    },1200);
+  }
+}
 
 initMap();
 if(me) refreshUI();
