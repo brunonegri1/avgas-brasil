@@ -833,10 +833,23 @@ function populateSB(){
 }
 
 // Aba Preços: aeródromos COM preço nos combustíveis ATIVOS, menor→maior
+// Calcula a média de preço atual por combustível (só o registro mais recente de cada aero)
+function calcFuelAvgs(){
+  const avgs={};
+  for(const f of FUELS){
+    const vals=aeros.map(a=>getByFuel(a.icao,f)).filter(Boolean).map(p=>+p.price);
+    avgs[f]=vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+  }
+  return avgs;
+}
+
 function populateRepList(){
   const el=document.getElementById('rep-list');
 
-  // For each aero, find the cheapest price among active fuels
+  // Calcula médias ANTES de montar a lista
+  const avgs=calcFuelAvgs();
+
+  // Para cada aero, pega o mais barato entre os combustíveis ativos
   const rows=[];
   for(const a of aeros){
     let cheapest=null;
@@ -855,10 +868,24 @@ function populateRepList(){
     return;
   }
 
-  el.innerHTML=rows.map((r,i)=>{
+  // Cabeçalho com média global (dos combustíveis ativos)
+  const activePrices=rows.map(r=>+r.best.p.price);
+  const globalAvg=activePrices.reduce((a,b)=>a+b,0)/activePrices.length;
+
+  el.innerHTML=`<div style="padding:6px 16px 4px;font-size:10px;color:var(--mut);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--grn);margin-right:4px;vertical-align:middle"></span>abaixo da média</span>
+    <span style="font-weight:600">Média: R$ ${globalAvg.toFixed(2)}</span>
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:4px;vertical-align:middle"></span>acima da média</span>
+  </div>`+
+  rows.map((r,i)=>{
+    const fuelPrice=+r.best.p.price;
+    const fuelAvg=avgs[r.best.f];
+    // Dot color: green = below average, red = at or above average
+    const dotColor=(fuelAvg!==null && fuelPrice < fuelAvg) ? 'var(--grn)' : 'var(--red)';
+    const dotTitle=(fuelAvg!==null) ? `Média ${r.best.f}: R$ ${fuelAvg.toFixed(2)}` : '';
+
     const color=FUEL_COLOR[r.best.f]||'#f4a620';
     const ptype=r.best.p.price_type||'vista';
-    // Check if other price type also exists for same fuel
     const otherType=ptype==='vista'?'prazo':'vista';
     const otherP=prices.find(p=>p.icao===r.a.icao&&p.fuel_type===r.best.f&&(p.price_type||'vista')===otherType);
     return`<div class="ur" style="cursor:pointer" onclick="flyTo('${r.a.icao}')">
@@ -866,10 +893,13 @@ function populateRepList(){
       <div class="ul2">
         <div class="uic" style="color:${color}">${r.a.icao}</div>
         <div class="uan">${r.a.nome}</div>
-        <div class="uf" style="margin-top:2px"><span class="fdot dc-${FC[r.best.f]}" style="width:6px;height:6px"></span>${r.best.f}</div>
+        <div class="uf" style="margin-top:2px">
+          <span title="${dotTitle}" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${dotColor};flex-shrink:0;box-shadow:0 0 4px ${dotColor}88"></span>
+          ${r.best.f}
+        </div>
       </div>
       <div style="text-align:right;flex-shrink:0">
-        <div class="up2" style="color:${color}">R$ ${(+r.best.p.price).toFixed(2)}</div>
+        <div class="up2" style="color:${color}">R$ ${fuelPrice.toFixed(2)}</div>
         <div class="upt-${ptype==='vista'?'v':'p'}">${ptype==='vista'?'À vista':'A prazo'}</div>
         ${otherP?`<div class="ud" style="margin-top:1px">${otherType==='vista'?'Vista':'Prazo'}: R$ ${(+otherP.price).toFixed(2)}</div>`:''}
         <div class="ud">${fmtS(r.best.p.created_at)}</div>
