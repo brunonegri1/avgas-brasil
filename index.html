@@ -492,10 +492,18 @@ function mkHTML(a){
   const ps=best?`R$ ${(+best.p.price).toFixed(2)}`:'—';
   const ft=best?best.f:'';
   const ds=best?fmtS(best.p.created_at):'';
+
+  // Bolinha indicadora: verde = abaixo da media, vermelho = igual/acima
+  let indColor='#8a9ab5';
+  if(best){
+    const avg=calcFuelAvgs()[best.f];
+    indColor=(avg!==null && +best.p.price < avg)?'#2ec97e':'#e84040';
+  }
+
   return `<div class="mk-o">
     <div class="mk-b" style="border:2px solid ${color};box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 8px ${color}33">
       <span class="mk-icao" style="color:${color}">${a.icao}</span>
-      ${ft?`<span class="mk-fuel" style="color:${color}99"><span class="fdot dc-${FC[ft]}" style="width:6px;height:6px;margin-right:2px;vertical-align:middle"></span>${ft}</span>`:''}
+      ${ft?`<span class="mk-fuel" style="color:${color}bb"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${indColor};box-shadow:0 0 4px ${indColor}bb;margin-right:2px;vertical-align:middle"></span>${ft}</span>`:''}
       <span class="mk-price" style="color:${best?'#e8eaf2':'#8a9ab5'}">${ps}</span>
       ${ds?`<span class="mk-date">${ds}</span>`:''}
     </div>
