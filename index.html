@@ -414,8 +414,10 @@ async function dbI(t,row){
   return data[0];
 }
 async function dbD(t,id){
-  const{error}=await db.from(t).delete().eq('id',id);
+  // Use count to confirm row was actually deleted (RLS may silently block)
+  const{error,count}=await db.from(t).delete({count:'exact'}).eq('id',id);
   if(error) throw error;
+  if(count===0) throw new Error('Registro não encontrado ou sem permissão para deletar. Verifique as políticas do banco.');
 }
 async function addLog(action,detail){
   if(!me) return;
