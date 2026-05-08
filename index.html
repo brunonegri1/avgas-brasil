@@ -131,8 +131,6 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
 .cval{font-weight:600;color:var(--acc);font-family:monospace;font-size:11px}
 /* SIDEBAR */
 /* SIDEBAR OVERLAY */
-.sb-ov{display:none;position:fixed;top:94px;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:898;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
-.sb-ov.on{display:block}
 .sb{position:fixed;right:0;top:94px;bottom:0;width:var(--sw);background:var(--card);border-left:1px solid var(--bdr);z-index:900;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
 .sb.on{transform:translateX(0)}
 .sbh{padding:13px 16px;border-bottom:1px solid var(--bdr);flex-shrink:0}
@@ -234,9 +232,6 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
   <div class="frow"><span class="flbl" id="fab-lbl">Novo aeródromo no mapa</span><button class="fab fab-s" id="fab-pick" onclick="togglePick()">📍</button></div>
   <div class="frow"><span class="flbl">Painel</span><button class="fab fab-m" id="fab-main" onclick="toggleSB()">☰</button></div>
 </div>
-
-<!-- SIDEBAR OVERLAY -->
-<div class="sb-ov" id="sb-ov" onclick="closeSB()"></div>
 
 <!-- SIDEBAR -->
 <div class="sb" id="sb">
@@ -1030,8 +1025,8 @@ function swTab(btn){
   if(t==='log') populateLog();
   if(t==='rep') populateRepList();
 }
-function openSB(){sbOpen=true;document.getElementById("sb").classList.add("on");document.getElementById("sb-ov").classList.add("on");document.getElementById("fab-main").textContent="✕";document.getElementById("fab-main").title="Fechar painel";}
-function closeSB(){sbOpen=false;document.getElementById("sb").classList.remove("on");document.getElementById("sb-ov").classList.remove("on");document.getElementById("fab-main").textContent="☰";document.getElementById("fab-main").title="Abrir painel";}
+function openSB(){sbOpen=true;document.getElementById("sb").classList.add("on");document.getElementById("fab-main").textContent="✕";document.getElementById("fab-main").title="Fechar painel";}
+function closeSB(){sbOpen=false;document.getElementById("sb").classList.remove("on");document.getElementById("fab-main").textContent="☰";document.getElementById("fab-main").title="Abrir painel";}
 function toggleSB(){if(sbOpen)closeSB();else openSB();}
 function openM(id){document.getElementById('mo-'+id).classList.add('on');}
 function closeM(id){document.getElementById('mo-'+id).classList.remove('on');}
