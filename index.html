@@ -130,8 +130,11 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
 .cbox{background:var(--light);border:1px solid var(--bdr);border-radius:var(--rs);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
 .cval{font-weight:600;color:var(--acc);font-family:monospace;font-size:11px}
 /* SIDEBAR */
-.sb{position:fixed;right:0;top:52px;bottom:0;width:var(--sw);background:var(--card);border-left:1px solid var(--bdr);z-index:900;display:none;flex-direction:column;overflow:hidden}
-.sb.on{display:flex}
+/* SIDEBAR OVERLAY */
+.sb-ov{display:none;position:fixed;top:94px;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:898;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.sb-ov.on{display:block}
+.sb{position:fixed;right:0;top:94px;bottom:0;width:var(--sw);background:var(--card);border-left:1px solid var(--bdr);z-index:900;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+.sb.on{transform:translateX(0)}
 .sbh{padding:13px 16px;border-bottom:1px solid var(--bdr);flex-shrink:0}
 .ub{display:flex;align-items:center;gap:10px}
 .ua{width:38px;height:38px;border-radius:50%;background:var(--acc);color:var(--sky);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
@@ -191,7 +194,7 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
 .frow{display:flex;align-items:center;gap:8px}
 .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle}
 @keyframes sp{to{transform:rotate(360deg)}}
-@media(max-width:600px){:root{--sw:100vw}.stats{display:none}.fabs{bottom:12px;right:12px}.md{max-width:100%}.leaflet-control-zoom{display:none!important}.fr2{grid-template-columns:1fr}.logo span{display:none}}
+@media(max-width:640px){:root{--sw:min(92vw,380px)}.stats{display:none}.fabs{bottom:12px;right:12px}.md{max-width:100%}.leaflet-control-zoom{display:none!important}.fr2{grid-template-columns:1fr}.logo span{display:none}}
 .empty{text-align:center;padding:28px 16px;color:var(--mut);font-size:13px}
 .rep-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
 .rep-sort-lbl{font-size:10px;color:var(--mut)}
@@ -231,6 +234,9 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--sky);color:var(--tx
   <div class="frow"><span class="flbl" id="fab-lbl">Novo aeródromo no mapa</span><button class="fab fab-s" id="fab-pick" onclick="togglePick()">📍</button></div>
   <div class="frow"><span class="flbl">Painel</span><button class="fab fab-m" id="fab-main" onclick="toggleSB()">☰</button></div>
 </div>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sb-ov" id="sb-ov" onclick="closeSB()"></div>
 
 <!-- SIDEBAR -->
 <div class="sb" id="sb">
@@ -688,7 +694,7 @@ function startPick(){
   document.getElementById('pbanner').classList.add('on');
   document.getElementById('fab-pick').classList.add('picking');
   document.getElementById('fab-lbl').textContent='Clique no mapa…';
-  if(window.innerWidth<=600){document.getElementById('sb').classList.remove('on');sbOpen=false;}
+  if(window.innerWidth<=640)closeSB();
 }
 function startPickFromModal(){closeM('new');startPick();}
 function cancelPick(){
@@ -783,11 +789,11 @@ function refreshUI(){
     document.getElementById('ua').textContent=ini;
     document.getElementById('un').textContent=me.nome;
     document.getElementById('ut').textContent=tLabel(me.type);
-    fabs.classList.add('on');sb.classList.add('on');sbOpen=true;
+    fabs.classList.add("on");if(window.innerWidth>640)openSB();
     populateSB();
   }else{
     tbr.innerHTML=`<button class="btn" onclick="openM('login')">Entrar</button><button class="btn btn-a" onclick="openM('register')">Cadastrar</button>`;
-    fabs.classList.remove('on');sb.classList.remove('on');sbOpen=false;
+    fabs.classList.remove("on");closeSB();
   }
 }
 
@@ -986,7 +992,9 @@ function swTab(btn){
   if(t==='log') populateLog();
   if(t==='rep') populateRepList();
 }
-function toggleSB(){sbOpen=!sbOpen;document.getElementById('sb').classList.toggle('on',sbOpen);document.getElementById('fab-main').textContent=sbOpen?'✕':'☰';}
+function openSB(){sbOpen=true;document.getElementById("sb").classList.add("on");document.getElementById("sb-ov").classList.add("on");document.getElementById("fab-main").textContent="✕";document.getElementById("fab-main").title="Fechar painel";}
+function closeSB(){sbOpen=false;document.getElementById("sb").classList.remove("on");document.getElementById("sb-ov").classList.remove("on");document.getElementById("fab-main").textContent="☰";document.getElementById("fab-main").title="Abrir painel";}
+function toggleSB(){if(sbOpen)closeSB();else openSB();}
 function openM(id){document.getElementById('mo-'+id).classList.add('on');}
 function closeM(id){document.getElementById('mo-'+id).classList.remove('on');}
 document.querySelectorAll('.mo').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on');}));
